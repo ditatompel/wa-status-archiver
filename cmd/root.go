@@ -3,19 +3,16 @@ package cmd
 import (
 	"os"
 
+	"wabot/internal/config"
+	"wabot/internal/database"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "wabot",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "ditatompel's WhatsApp bot",
+	Long: `A WhatsApp bot run for ditatompel's project.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -40,4 +37,9 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	config.LoadAll(".env")
+	// connect to DB
+	if err := database.ConnectDB(); err != nil {
+		panic(err)
+	}
 }

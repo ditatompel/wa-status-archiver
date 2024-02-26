@@ -273,21 +273,13 @@ func HandleMessage(evt *events.Message) {
 			wLog.Errorf("Failed to download image: %v", err)
 			return
 		}
-		exts, _ := mime.ExtensionsByType(img.GetMimetype())
-		path := fmt.Sprintf("%s%s", evt.Info.ID, exts[0])
-		userSlug := slug.Make(evt.Info.PushName)
-		mediaDest := fmt.Sprintf("%s/%s", mediaDir, userSlug)
-		err = os.MkdirAll(mediaDest, 0755)
+
+		savedFile, err := storeMedia(mediaDir, data, evt, evt.Info.PushName)
 		if err != nil {
-			wLog.Errorf("Failed to create media directory: %v", err)
+			wLog.Errorf("Failed to save video: %v", err)
 			return
 		}
-		err = os.WriteFile(mediaDest+"/"+path, data, 0755)
-		if err != nil {
-			wLog.Errorf("Failed to save image: %v", err)
-			return
-		}
-		wLog.Infof("Saved image in message to %s", path)
+		wLog.Infof("Saved video in message to %s", savedFile)
 	}
 
 	vid := evt.Message.GetVideoMessage()
@@ -297,22 +289,104 @@ func HandleMessage(evt *events.Message) {
 			wLog.Errorf("Failed to download video: %v", err)
 			return
 		}
-		exts, _ := mime.ExtensionsByType(vid.GetMimetype())
-		path := fmt.Sprintf("%s%s", evt.Info.ID, exts[0])
-		userSlug := slug.Make(evt.Info.PushName)
-		mediaDest := fmt.Sprintf("%s/%s", mediaDir, userSlug)
-		err = os.MkdirAll(mediaDest, 0755)
-		if err != nil {
-			wLog.Errorf("Failed to create media directory: %v", err)
-			return
-		}
-		err = os.WriteFile(mediaDest+"/"+path, data, 0644)
+
+		savedFile, err := storeMedia(mediaDir, data, evt, evt.Info.PushName)
 		if err != nil {
 			wLog.Errorf("Failed to save video: %v", err)
 			return
 		}
-		wLog.Infof("Saved video in message to %s", path)
+
+		wLog.Infof("Saved video in message to %s", savedFile)
 	}
+}
+
+func isStatusUpdate(evt *events.Message) bool {
+	return evt.Info.Chat.String() == "status@broadcast"
+}
+
+type mediaInfo struct {
+	caption   string
+	mediaType string
+	filesize  uint64
+	height    uint32
+	width     uint32
+	duration  uint32
+	fileLoc   string
+}
+
+func storeMedia(path string, data []byte, evt *events.Message, username string) (string, error) {
+	filename := evt.Info.ID
+	fileInfo := mediaInfo{}
+	if evt.Info.MediaType == "image" {
+		ext, _ := mime.ExtensionsByType(evt.Message.ImageMessage.GetMimetype())
+		filename = fmt.Sprintf("%s%s", evt.Info.ID, ext[0])
+		fileInfo.caption = evt.Message.ImageMessage.GetCaption()
+		fileInfo.mediaType = evt.Message.ImageMessage.GetMimetype()
+		fileInfo.filesize = evt.Message.ImageMessage.GetFileLength()
+		fileInfo.height = evt.Message.ImageMessage.GetHeight()
+		fileInfo.width = evt.Message.ImageMessage.GetWidth()
+
+	}
+	if evt.Info.MediaType == "video" {
+		ext, _ := mime.ExtensionsByType(evt.Message.VideoMessage.GetMimetype())
+		filename = fmt.Sprintf("%s%s", evt.Info.ID, ext[0])
+		fileInfo.caption = evt.Message.VideoMessage.GetCaption()
+		fileInfo.mediaType = evt.Message.VideoMessage.GetMimetype()
+		fileInfo.filesize = evt.Message.VideoMessage.GetFileLength()
+		fileInfo.height = evt.Message.VideoMessage.GetHeight()
+		fileInfo.width = evt.Message.VideoMessage.GetWidth()
+		fileInfo.duration = evt.Message.VideoMessage.GetSeconds()
+	}
+
+	userSlug := slug.Make(username)
+	mediaDest := fmt.Sprintf("%s/%s_%s", path, evt.Info.Sender.User, userSlug)
+	err := os.MkdirAll(mediaDest, 0755)
+	if err != nil {
+		return "", err
+	}
+
+	fileInfo.fileLoc = mediaDest + "/" + filename
+
+	err = os.WriteFile(fileInfo.fileLoc, data, 0644)
+	if err != nil {
+		return "", err
+	}
+
+	if isStatusUpdate(evt) {
+		err = repo.recordStatusUpdates(evt, fileInfo)
+		if err != nil {
+			wLog.Errorf("Failed to record status update: %v", err)
+		}
+	}
+
+	return fileInfo.fileLoc, nil
+}
+
+func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) error {
+	sql := `INSERT INTO tbl_status_updates
+	(msg_id, account, sender_phone, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_loc, msg_date)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	_, err := r.db.Exec(sql,
+		msg.Info.ID,
+		r.account.ID,
+		msg.Info.Sender.User,
+		msg.Info.Sender.String(),
+		msg.Info.PushName,
+		mediaInfo.caption,
+		mediaInfo.mediaType,
+		mediaInfo.mediaType,
+		mediaInfo.filesize,
+		mediaInfo.height,
+		mediaInfo.width,
+		mediaInfo.fileLoc,
+		msg.Info.Timestamp,
+	)
+
+	if err != nil {
+		wLog.Errorf("Failed to store status update: %v", err)
+	}
+	return nil
 }
 
 func (r *waRepo) storeUser(jid types.JID, name string) error {

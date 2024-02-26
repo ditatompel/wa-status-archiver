@@ -5,11 +5,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"wabot/frontend"
 	"wabot/internal/config"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/spf13/cobra"
 )
 
@@ -53,13 +55,13 @@ func serve() {
 	// ======================================
 	// ROUTES
 	// ======================================
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"message": "WAT?",
-			"data":    nil,
-		})
-	})
+	// app.Get("/", func(c *fiber.Ctx) error {
+	// 	return c.JSON(fiber.Map{
+	// 		"status":  "ok",
+	// 		"message": "WAT?",
+	// 		"data":    nil,
+	// 	})
+	// })
 
 	// ping check
 	app.Get("/ping", func(c *fiber.Ctx) error {
@@ -71,6 +73,11 @@ func serve() {
 	})
 
 	// route.V1Routes(app)
+
+	app.Use("/", filesystem.New(filesystem.Config{
+        Root:         frontend.SvelteKitHandler(),
+        NotFoundFile: "index.html",
+    }))
 
 	// signal channel to capture system calls
 	sigCh := make(chan os.Signal, 1)

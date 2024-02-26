@@ -8,12 +8,14 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"wabot/internal/database"
 	"wabot/internal/helpers"
 
 	"github.com/gosimple/slug"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
@@ -27,20 +29,27 @@ var (
 	wLog waLog.Logger
 )
 
-var logLevel = "INFO"
+type waRepo struct {
+	db      *database.DB
+	account *store.Device
+}
+
+func newWaRepo(db *database.DB, account *store.Device) *waRepo {
+	return &waRepo{
+		db:      db,
+		account: account,
+	}
+}
+
+var repo *waRepo
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		wLog = waLog.Stdout("Main", logLevel, true)
+	Short: "Run the bot",
+	Long:  `Run the bot by listening to WhatsApp websocket events`,
+	Run: func(_ *cobra.Command, _ []string) {
+		wLog = waLog.Stdout("Main", LogLevel, true)
 		WaClient := CreateClient()
 		ConnectClient(WaClient)
 
@@ -60,7 +69,7 @@ func init() {
 }
 
 func CreateClient() *whatsmeow.Client {
-	dbLog := waLog.Stdout("Database", logLevel, true)
+	dbLog := waLog.Stdout("Database", LogLevel, true)
 	sql, err := sqlstore.New("sqlite3", "file:data/db/accounts.db?_foreign_keys=on", dbLog)
 	if err != nil {
 		dbLog.Errorf("Error connecting to database: %v", err)
@@ -73,9 +82,12 @@ func CreateClient() *whatsmeow.Client {
 		os.Exit(1)
 	}
 
+	repo = newWaRepo(database.GetDB(), deviceStore)
+
 	wLog.Infof("Device: %s", helpers.PrettyPrint(deviceStore.ID))
 	wLog.Infof("Pushname: %s", helpers.PrettyPrint(deviceStore.PushName))
 	wLog.Infof("Platform: %s", helpers.PrettyPrint(deviceStore.Platform))
+	wLog.Infof("Account: %s", helpers.PrettyPrint(deviceStore.Account))
 
 	cli = whatsmeow.NewClient(deviceStore, wLog)
 	return cli
@@ -185,52 +197,15 @@ func HandleEvent(rawEvt interface{}) {
 	}
 }
 
-/*
-- Type:
-
-	{
-	"Info": {
-	"Chat": "6281805931588-1492190836@g.us",
-	"Sender": "15185546427:5@s.whatsapp.net",
-	"IsFromMe": true,
-	"IsGroup": true,
-	"BroadcastListOwner": "",
-	"ID": "3EB022B467F7CBCD31345F",
-	"ServerID": 0,
-	"Type": "text",
-	"PushName": "Jeflon Zuckergates",
-	"Timestamp": "2024-02-26T09:00:46+07:00",
-	"Category": "",
-	"Multicast": false,
-	"MediaType": "",
-	"Edit": "",
-	"VerifiedName": null,
-	"DeviceSentMeta": null
-	},
-	"Message": {
-	"conversation": "KIONG HI GAEZZZZZZZZZZZZZZ"
-	},
-	"IsEphemeral": false,
-	"IsViewOnce": false,
-	"IsViewOnceV2": false,
-	"IsDocumentWithCaption": false,
-	"IsEdit": false,
-	"SourceWebMsg": null,
-	"UnavailableRequestID": "",
-	"RetryCount": 0,
-	"NewsletterMeta": null,
-	"RawMessage": {
-	"conversation": "KIONG HI GAEZZZZZZZZZZZZZZ"
-	}
-	}
-*/
 func HandleMessage(evt *events.Message) {
 	// log.Println(helpers.PrettyPrint(evt))
 	// msg := evt.Message.GetConversation()
 	// log.Println(msg)
-	// if evt.Info.IsFromMe {
-	// 	return
-	// }
+	if evt.Info.IsFromMe {
+		return
+	}
+
+	repo.storeUser(evt.Info.Sender, evt.Info.PushName)
 
 	mediaDir := "data/media"
 	isStatusBroadcast := false
@@ -260,6 +235,10 @@ func HandleMessage(evt *events.Message) {
 	if evt.Info.Chat.String() == "status@broadcast" {
 		mediaDir = "data/media/_broadcast"
 		isStatusBroadcast = true
+	}
+
+	if !isStatusBroadcast {
+		repo.storeConversation(evt)
 	}
 
 	wLog.Infof("Received message %s from %s (%s): %+v", evt.Info.ID, evt.Info.SourceString(), strings.Join(metaParts, ", "), evt.Message)
@@ -322,7 +301,7 @@ func HandleMessage(evt *events.Message) {
 		path := fmt.Sprintf("%s%s", evt.Info.ID, exts[0])
 		userSlug := slug.Make(evt.Info.PushName)
 		mediaDest := fmt.Sprintf("%s/%s", mediaDir, userSlug)
-		err = os.MkdirAll(mediaDest, 0644)
+		err = os.MkdirAll(mediaDest, 0755)
 		if err != nil {
 			wLog.Errorf("Failed to create media directory: %v", err)
 			return
@@ -336,21 +315,38 @@ func HandleMessage(evt *events.Message) {
 	}
 }
 
-func parseJID(arg string) (types.JID, bool) {
-	if arg[0] == '+' {
-		arg = arg[1:]
+func (r *waRepo) storeUser(jid types.JID, name string) error {
+	sql := `INSERT INTO tbl_users (phone, jid, server, name) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?`
+	_, err := r.db.Exec(sql, jid.User, jid.String(), jid.Server, name, name)
+	if err != nil {
+		wLog.Errorf("Failed to store user: %v", err)
 	}
-	if !strings.ContainsRune(arg, '@') {
-		return types.NewJID(arg, types.DefaultUserServer), true
-	} else {
-		recipient, err := types.ParseJID(arg)
-		if err != nil {
-			wLog.Errorf("Invalid JID %s: %v", arg, err)
-			return recipient, false
-		} else if recipient.User == "" {
-			wLog.Errorf("Invalid JID %s: no server specified", arg)
-			return recipient, false
-		}
-		return recipient, true
+	return err
+}
+
+func (r *waRepo) storeConversation(msg *events.Message) error {
+	sql := `INSERT INTO tbl_chats
+	(room, msg_id, account, sender, name, is_group, msg_type, media_type, category, message, msg_date)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	isGroup := 0
+	if msg.Info.IsGroup {
+		isGroup = 1
 	}
+
+	_, err := r.db.Exec(sql,
+		msg.Info.Chat.String(),
+		msg.Info.ID,
+		r.account.ID,
+		msg.Info.Sender,
+		msg.Info.PushName,
+		isGroup,
+		msg.Info.Type,
+		msg.Info.MediaType,
+		msg.Info.Category,
+		msg.Message.GetConversation(),
+		msg.Info.Timestamp)
+	if err != nil {
+		wLog.Errorf("Failed to store conversation: %v", err)
+	}
+	return err
 }

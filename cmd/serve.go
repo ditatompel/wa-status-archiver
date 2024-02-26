@@ -76,7 +76,7 @@ func serve() {
 
 	app.Use("/", filesystem.New(filesystem.Config{
         Root:         frontend.SvelteKitHandler(),
-        NotFoundFile: "index.html",
+        // NotFoundFile: "index.html",
     }))
 
 	// signal channel to capture system calls

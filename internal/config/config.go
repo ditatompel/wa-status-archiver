@@ -13,5 +13,6 @@ func LoadAll(envFile string) {
         log.Fatalf("can't load .env file. error: %v", err)
     }
 
+	LoadApp()
     LoadDBCfg()
 }

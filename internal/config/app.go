@@ -11,6 +11,7 @@ type App struct {
     Host        string
     Port        int
     ProxyHeader string
+	SecretKey   string
 }
 
 var app = &App{}
@@ -26,4 +27,5 @@ func LoadApp() {
     app.Debug, _ = strconv.ParseBool(os.Getenv("APP_DEBUG"))
     app.Prefork, _ = strconv.ParseBool(os.Getenv("APP_PREFORK"))
     app.ProxyHeader = os.Getenv("APP_PROXY_HEADER")
+	app.SecretKey = os.Getenv("SECRET_KEY")
 }

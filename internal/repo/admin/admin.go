@@ -24,6 +24,7 @@ type AdminRepo struct {
 
 type AdminRepository interface {
 	CreateAdmin(*Admin) (*Admin, error)
+	Login(username string, password string) (*Admin, error)
 }
 
 func NewAdminRepo(db *database.DB) AdminRepository {
@@ -55,6 +56,41 @@ func (repo *AdminRepo) CreateAdmin(admin *Admin) (*Admin, error) {
 		return nil, err
 	}
 	return admin, nil
+}
+
+func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
+	query := `SELECT id, username, password FROM tbl_admin WHERE username = ? AND is_deleted = ? LIMIT 1`
+	row, err := repo.db.Query(query, username, 0)
+	if err != nil {
+		return nil, err
+	}
+	defer row.Close()
+
+	admin := Admin{}
+	if row.Next() {
+		err = row.Scan(&admin.Id, &admin.Username, &admin.Password)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("Invalid username or password")
+	}
+
+	match, err := checkPassword(admin.Password, password)
+	if err != nil {
+		return nil, err
+	}
+	if !match {
+		return nil, errors.New("Invalid username or password")
+	}
+
+	update := `UPDATE tbl_admin SET lastactive_ts = ? WHERE id = ?`
+	_, err = repo.db.Exec(update, time.Now().Unix(), admin.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &admin, nil
 }
 
 func (repo *AdminRepo) isUsernameExists(username string) bool {

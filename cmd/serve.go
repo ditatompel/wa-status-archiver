@@ -10,6 +10,7 @@ import (
 	"wabot/api/route"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -52,6 +53,11 @@ func serve() {
 			Format: "[${time}] ${status} - ${latency} ${method} ${path} ${ip} ${ua}\n",
 		}))
 	}
+
+	// cookie
+    app.Use(encryptcookie.New(encryptcookie.Config{
+        Key: appCfg.SecretKey,
+    }))
 
 	// ======================================
 	// ROUTES

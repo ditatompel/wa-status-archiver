@@ -1,11 +1,11 @@
 BINARY_NAME = wabot
 
-.PHONY: static
-static:
-	go generate ./...
-
 .PHONY: build
-build: static linux64
+build: ui linux64
+
+.PHONY: ui
+ui:
+	go generate ./...
 
 .PHONY: linux64
 linux64:

@@ -1,3 +1,43 @@
+<script>
+	import { invalidateAll, goto } from '$app/navigation';
+
+	/**
+	 * @typedef formResult
+	 * @type {object}
+	 * @property {string} status
+	 * @property {string} message
+	 * @property {null | object} data
+	 */
+	/** @type {formResult} */
+	export let formResult;
+
+	let isProcessing = false;
+
+	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+	async function handleSubmit(event) {
+		isProcessing = true;
+		const data = new FormData(event.currentTarget);
+
+		const response = await fetch(event.currentTarget.action, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			},
+			body: JSON.stringify(Object.fromEntries(data))
+		});
+
+		formResult= await response.json();
+		isProcessing = false;
+
+		if (formResult.status === 'ok') {
+			// rerun all `load` functions, following the successful update
+			await invalidateAll();
+			goto('/dashboard.html');
+		}
+	}
+</script>
+
 <section class="bg-gray-900">
 	<div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
 		<a href="/" class="flex items-center mb-6 text-2xl font-semibold text-white"> WaBot UI</a>
@@ -8,7 +48,12 @@
 				<h1 class="text-xl font-bold leading-tight tracking-tight tmd:text-2xl text-white">
 					Sign in to your account
 				</h1>
-				<form class="space-y-4 md:space-y-6" action="#">
+				<form
+					class="space-y-4 md:space-y-6"
+					action="/api/v1/auth/login"
+					method="POST"
+					on:submit|preventDefault={handleSubmit}
+				>
 					<div>
 						<label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
 							>Your email</label
@@ -23,10 +68,7 @@
 						/>
 					</div>
 					<div>
-						<label
-							for="password"
-							class="block mb-2 text-sm font-medium text-white">Password</label
-						>
+						<label for="password" class="block mb-2 text-sm font-medium text-white">Password</label>
 						<input
 							type="password"
 							name="password"
@@ -36,40 +78,32 @@
 							required
 						/>
 					</div>
-					<div class="flex items-center justify-between">
-						<div class="flex items-start">
-							<div class="flex items-center h-5">
-								<input
-									id="remember"
-									aria-describedby="remember"
-									type="checkbox"
-									class="w-4 h-4 border rounded focus:ring-3 bg-gray-700 order-gray-600 focus:ring-primary-600 ring-offset-gray-800"
-									required
-								/>
-							</div>
-							<div class="ml-3 text-sm">
-								<label for="remember" class="text-gray-300">Remember me</label>
-							</div>
-						</div>
-						<a
-							href="/"
-							class="text-sm font-medium hover:underline text-primary-500"
-							>Forgot password?</a
-						>
-					</div>
 					<button
 						type="submit"
 						class="w-full focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
 						>Sign in</button
 					>
-					<p class="text-sm font-light text-gray-400">
-						Don’t have an account yet? <a
-							href="/"
-							class="font-medium hover:underline text-primary-500">Sign up</a
-						>
-					</p>
 				</form>
 			</div>
+
+			{#if !isProcessing}
+				{#if formResult?.status === 'error'}
+					<div class="mx-4 p-4 mb-4 text-sm rounded-lg bg-gray-700 text-red-400" role="alert">
+						<span class="font-medium">Error:</span>
+						{formResult.message}!
+					</div>
+				{/if}
+				{#if formResult?.status === 'ok'}
+					<div class="mx-4 p-4 mb-4 text-sm rounded-lg bg-gray-700 text-green-400" role="alert">
+						<span class="font-medium">Success:</span>
+						{formResult.message}!
+					</div>
+				{/if}
+			{:else}
+				<div class="mx-4 p-4 mb-4 text-sm rounded-lg bg-gray-700 text-blue-400" role="alert">
+					<span class="font-medium">Processing...</span>
+				</div>
+			{/if}
 		</div>
 	</div>
 </section>

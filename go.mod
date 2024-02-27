@@ -3,6 +3,7 @@ module wabot
 go 1.22.0
 
 require (
+	github.com/alexedwards/argon2id v1.0.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.52.1
 	github.com/gosimple/slug v1.14.0
@@ -12,6 +13,7 @@ require (
 	github.com/mdp/qrterminal v1.0.1
 	github.com/spf13/cobra v1.8.0
 	go.mau.fi/whatsmeow v0.0.0-20240223131828-1bdd11e8ee3e
+	golang.org/x/term v0.17.0
 )
 
 require (

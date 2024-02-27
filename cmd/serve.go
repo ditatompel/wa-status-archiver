@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"wabot/frontend"
 	"wabot/internal/config"
+	"wabot/api/route"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -72,7 +73,7 @@ func serve() {
 		})
 	})
 
-	// route.V1Routes(app)
+	route.V1Api(app)
 
 	app.Use("/", filesystem.New(filesystem.Config{
         Root:         frontend.SvelteKitHandler(),

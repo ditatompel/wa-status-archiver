@@ -31,3 +31,48 @@ func ParseJID(arg string) (types.JID, bool) {
 		return recipient, true
 	}
 }
+
+func StrongPassword(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+	if !strings.ContainsAny(password, "0123456789") {
+		return false
+	}
+	if !strings.ContainsAny(password, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+		return false
+	}
+	if !strings.ContainsAny(password, "abcdefghijklmnopqrstuvwxyz") {
+		return false
+	}
+	if !strings.ContainsAny(password, "!@#$%^&*()_+|~-=`{}[]:;<>?,./") {
+		return false
+	}
+	return true
+}
+
+// No special character and unicode for username
+func ValidUsername(username string) bool {
+	if len(username) < 5 || len(username) > 20 {
+		return false
+	}
+	// alphanumeric only
+
+	// reject witespace, tabs, newlines, and other special characters
+	if strings.ContainsAny(username, " \t\n") {
+		return false
+	}
+	// reject unicode
+	if strings.ContainsAny(username, "^\x00-\x7F") {
+		return false
+	}
+	// reject special characters
+	if strings.ContainsAny(username, "!@#$%^&*()_+|~-=`{}[]:;<>?,./ ") { // note last blank space
+		return false
+	}
+
+	if !strings.ContainsAny(username, "abcdefghijklmnopqrstuvwxyz0123456789") {
+		return false
+	}
+	return true
+}

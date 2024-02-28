@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 	"wabot/internal/database"
@@ -22,6 +23,9 @@ func Login(c *fiber.Ctx) error {
 	repo := admin.NewAdminRepo(database.GetDB())
 	res, err := repo.Login(payload.Username, payload.Password)
 	if err != nil {
+		triggerJson, _ := json.Marshal(map[string]interface{}{"err": err.Error()})
+
+		c.Response().Header.Set("HX-Trigger", string(triggerJson))
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"status":  "error",
 			"message": err.Error(),

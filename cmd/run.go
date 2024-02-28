@@ -374,7 +374,7 @@ func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) e
 		msg.Info.Sender.String(),
 		msg.Info.PushName,
 		mediaInfo.caption,
-		mediaInfo.mediaType,
+		msg.Info.MediaType,
 		mediaInfo.mediaType,
 		mediaInfo.filesize,
 		mediaInfo.height,

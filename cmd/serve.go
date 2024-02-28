@@ -5,15 +5,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"wabot/frontend"
-	"wabot/internal/config"
 	"wabot/api/route"
+	"wabot/internal/config"
+	"wabot/views"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/template/html/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -55,21 +55,14 @@ func serve() {
 	}
 
 	// cookie
-    app.Use(encryptcookie.New(encryptcookie.Config{
-        Key: appCfg.SecretKey,
-    }))
+	app.Use(encryptcookie.New(encryptcookie.Config{
+		Key: appCfg.SecretKey,
+	}))
 
-	// ======================================
-	// ROUTES
-	// ======================================
-	// app.Get("/", func(c *fiber.Ctx) error {
-	// 	return c.JSON(fiber.Map{
-	// 		"status":  "ok",
-	// 		"message": "WAT?",
-	// 		"data":    nil,
-	// 	})
-	// })
-
+	app.Static("/", "./public")
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Render("templates/index", fiber.Map{}, "templates/layouts/main")
+	})
 	// ping check
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
@@ -79,12 +72,8 @@ func serve() {
 		})
 	})
 
+	route.AppRoute(app)
 	route.V1Api(app)
-
-	app.Use("/", filesystem.New(filesystem.Config{
-        Root:         frontend.SvelteKitHandler(),
-        // NotFoundFile: "index.html",
-    }))
 
 	// signal channel to capture system calls
 	sigCh := make(chan os.Signal, 1)
@@ -107,9 +96,12 @@ func serve() {
 
 func fiberConfig() fiber.Config {
 	// Return Fiber configuration.
+	// template := html.New("./views", ".html")
+	template := html.NewFileSystem(views.EmbedHandler(), ".html")
 	return fiber.Config{
 		Prefork:     config.AppCfg().Prefork,
 		ProxyHeader: config.AppCfg().ProxyHeader,
 		AppName:     "wabot HTTP server " + AppVer,
+		Views:       template,
 	}
 }

@@ -1,11 +1,7 @@
 BINARY_NAME = wabot
 
 .PHONY: build
-build: ui linux64
-
-.PHONY: ui
-ui:
-	go generate ./...
+build: linux64
 
 .PHONY: linux64
 linux64:

@@ -6,6 +6,7 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.52.1
+	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/gosimple/slug v1.14.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.5.1
@@ -19,6 +20,8 @@ require (
 require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/gofiber/template v1.8.3 // indirect
+	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect

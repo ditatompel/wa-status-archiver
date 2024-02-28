@@ -1,0 +1,16 @@
+<html lang="en" class="dark">
+  <head>
+    <title>{{.Title}} - Wabot UI</title>
+    <link rel="stylesheet" href="/main.css" />
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+  </head>
+
+  <body>
+    {{template "templates/partials/navbar" .}} {{template "templates/partials/sidebar" .}}
+    <div
+      class="min-h-screen bg-gray-100/80 p-4 pt-16 dark:bg-gray-900/80 sm:ml-64"
+    >
+      {{embed}}
+    </div>
+  </body>
+</html>

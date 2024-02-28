@@ -1,0 +1,34 @@
+<nav class="bg-gray-800 fixed top-0 z-30 w-full shadow-2xl">
+  <div class="px-3 py-3 lg:px-5 lg:pl-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center justify-start rtl:justify-end">
+        <button
+          class="btn btn-sm inline-flex items-center md:hidden"
+          aria-label="Mobile awer Button"
+        >
+          <span>
+            <svg viewBox="0 0 100 80" class="fill-token h-4 w-4">
+              <rect width="100" height="20" />
+              <rect y="30" width="100" height="20" />
+              <rect y="60" width="100" height="20" />
+            </svg>
+          </span>
+        </button>
+
+        <a href="/dashboard" class="ms-2 flex md:me-24">
+          <span
+            class="hidden self-center whitespace-nowrap text-2xl font-semibold lg:block"
+            >ditatompel</span
+          >
+        </a>
+      </div>
+      <div class="flex items-center">
+        <div class="ms-3 flex items-center space-x-4">
+          <button class="focus:outline-none text-white focus:ring-4 rounded-lg text-sm px-5 py-2.5 me-2 bg-red-600 hover:bg-red-700 focus:ring-red-900" hx-delete="/api/v1/auth/login" hx-confirm="Are you sure?">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

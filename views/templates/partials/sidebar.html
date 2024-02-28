@@ -1,0 +1,26 @@
+<aside
+  id="logo-sidebar"
+  class="bg-surface-100-800-token fixed left-0 top-0 z-20 h-screen w-64 -translate-x-full pt-20 shadow-2xl transition-transform sm:translate-x-0"
+  aria-label="Sidebar"
+>
+  <div class="bg-surface-100-800-token h-full overflow-y-auto px-3 pb-4">
+    <ul class="space-y-2 font-medium">
+      <li>
+        <a
+          href="/dashboard"
+          class="{{if eq .Uri "dashboard"}}navlink-sidebar-active{{else}}navlink-sidebar{{end}}"
+        >
+          <span class="ms-3">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="/contacts"
+          class="{{if eq .Uri "contacts"}}navlink-sidebar-active{{else}}navlink-sidebar{{end}}"
+        >
+          <span class="ms-3">Contacts</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>

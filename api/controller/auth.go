@@ -37,9 +37,28 @@ func Login(c *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 
+	c.Response().Header.Set("HX-Redirect", "/dashboard")
+
 	return c.JSON(fiber.Map{
 		"status":  "ok",
 		"message": "Logged in",
+		"data":    nil,
+	})
+}
+
+func Logout(c *fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:     "wabot_ui",
+		Value:    "",
+		Expires:  time.Now(),
+		HTTPOnly: true,
+	})
+
+	c.Response().Header.Set("HX-Redirect", "/login")
+
+	return c.JSON(fiber.Map{
+		"status":  "ok",
+		"message": "Logged out",
 		"data":    nil,
 	})
 }

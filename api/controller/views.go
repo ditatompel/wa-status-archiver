@@ -20,14 +20,23 @@ func ViewLogin(c *fiber.Ctx) error {
 }
 
 func ViewDashboard(c *fiber.Ctx) error {
+	template := "templates/layouts/app"
+	if hx := c.Get("Hx-Request"); hx == "true" {
+		template = ""
+	}
 	return c.Render("templates/dashboard", fiber.Map{
 		"Title": "Dashboard",
-		"Uri":   "dashboard",
-	}, "templates/layouts/app")
+		"Uri":   "/dashboard",
+	}, template)
 }
 
 func ViewContacts(c *fiber.Ctx) error {
 	co := contact.NewContactRepo(database.GetDB())
+
+	template := "templates/layouts/app"
+	if hx := c.Get("Hx-Request"); hx == "true" {
+		template = ""
+	}
 
 	contacts, err := co.Contacts()
 	if err != nil {
@@ -40,13 +49,18 @@ func ViewContacts(c *fiber.Ctx) error {
 
 	return c.Render("templates/contacts", fiber.Map{
 		"Title":    "Contacts",
-		"Uri":      "contacts",
+		"Uri":      "/contacts",
 		"Contacts": contacts,
-	}, "templates/layouts/app")
+	}, template)
 }
 
 func ViewStatusUpdates(c *fiber.Ctx) error {
 	su := statusupdate.NewStatusUpdateRepo(database.GetDB())
+
+	template := "templates/layouts/app"
+	if hx := c.Get("Hx-Request"); hx == "true" {
+		template = ""
+	}
 
 	statusUpdates, err := su.StatusUpdates()
 	if err != nil {
@@ -59,7 +73,7 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 
 	return c.Render("templates/status-updates", fiber.Map{
 		"Title":         "Status Updates",
-		"Uri":           "status-updates",
+		"Uri":           "/status-updates",
 		"StatusUpdates": statusUpdates,
-	}, "templates/layouts/app")
+	}, template)
 }

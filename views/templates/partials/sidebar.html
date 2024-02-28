@@ -3,31 +3,16 @@
   class="bg-gray-800 fixed left-0 top-0 z-20 h-screen w-64 -translate-x-full pt-20 shadow-2xl transition-transform sm:translate-x-0"
   aria-label="Sidebar"
 >
-  <div class="bg-surface-100-800-token h-full overflow-y-auto px-3 pb-4">
-    <ul class="space-y-2 font-medium">
+  <div class="bg-gray800 h-full overflow-y-auto px-3 pb-4">
+    <ul id="sidebar-nav" class="space-y-2 font-medium">
       <li>
-        <a
-          href="/dashboard"
-          class="{{if eq .Uri "dashboard"}}navlink-sidebar-active{{else}}navlink-sidebar{{end}}"
-        >
-          <span class="ms-3">Dashboard</span>
-        </a>
+        <a class="navlink-sidebar{{if eq .Uri "/dashboard"}} active{{end}}" href="/dashboard" hx-get="/dashboard" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Dashboard</span></a>
       </li>
       <li>
-        <a
-          href="/contacts"
-          class="{{if eq .Uri "contacts"}}navlink-sidebar-active{{else}}navlink-sidebar{{end}}"
-        >
-          <span class="ms-3">Contacts</span>
-        </a>
+        <a class="navlink-sidebar{{if eq .Uri "/contacts"}} active{{end}}" href="/contacts" hx-get="/contacts" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Contacts</span></a>
       </li>
       <li>
-        <a
-          href="/status-updates"
-          class="{{if eq .Uri "status-updates"}}navlink-sidebar-active{{else}}navlink-sidebar{{end}}"
-        >
-          <span class="ms-3">Status Updates</span>
-        </a>
+        <a class="navlink-sidebar{{if eq .Uri "/status-updates"}} active{{end}}" href="/status-updates" hx-get="/status-updates" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Status Updates</span></a>
       </li>
     </ul>
   </div>

@@ -10,7 +10,7 @@ body {
   @apply flex items-center rounded-lg p-2 hover:bg-pink-500 hover:text-black;
 }
 
-.navlink-sidebar-active {
-  @apply flex items-center rounded-lg p-2 bg-blue-500 text-white;
+.navlink-sidebar.active {
+  @apply !bg-blue-500 !text-white;
 }
 

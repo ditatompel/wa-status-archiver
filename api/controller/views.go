@@ -3,6 +3,7 @@ package controller
 import (
 	"wabot/internal/database"
 	"wabot/internal/repo/contact"
+	"wabot/internal/repo/statusupdate"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -41,5 +42,24 @@ func ViewContacts(c *fiber.Ctx) error {
 		"Title":    "Contacts",
 		"Uri":      "contacts",
 		"Contacts": contacts,
+	}, "templates/layouts/app")
+}
+
+func ViewStatusUpdates(c *fiber.Ctx) error {
+	su := statusupdate.NewStatusUpdateRepo(database.GetDB())
+
+	statusUpdates, err := su.StatusUpdates()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.Render("templates/status-updates", fiber.Map{
+		"Title":         "Status Updates",
+		"Uri":           "status-updates",
+		"StatusUpdates": statusUpdates,
 	}, "templates/layouts/app")
 }

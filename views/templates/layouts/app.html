@@ -6,10 +6,14 @@
   </head>
 
   <body>
-    {{template "templates/partials/navbar" .}} {{template "templates/partials/sidebar" .}}
+    {{template "templates/partials/navbar" .}} {{template
+    "templates/partials/sidebar" .}}
     <div
       class="min-h-screen bg-gray-100/80 p-4 pt-16 dark:bg-gray-900/80 sm:ml-64"
     >
+      <div class="mb-4">
+        <h1 class="h2 font-extrabold">{{.Title}}</h1>
+      </div>
       {{embed}}
     </div>
   </body>

@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"fmt"
 	"time"
 	"wabot/internal/database"
 	"wabot/internal/helpers"
@@ -10,12 +11,12 @@ import (
 )
 
 type Admin struct {
-	Id           int    `db:"id" json:"id"`
-	Username     string `db:"username" json:"username"`
-	Password     string `db:"password" json:"password,omitempty"`
-	LastactiveTs int64  `db:"lastactive_ts" json:"lastactive_ts"`
-	CreatedTs    int64  `db:"created_ts" json:"created_ts"`
-	IsDeleted    bool   `db:"is_deleted" json:"is_deleted"`
+	Id           int       `db:"id" json:"id"`
+	Username     string    `db:"username" json:"username"`
+	Password     string    `db:"password" json:"password,omitempty"`
+	LastactiveTs time.Time `db:"lastactive_ts" json:"lastactive_ts"`
+	CreatedTs    time.Time `db:"created_ts" json:"created_ts"`
+	IsDeleted    bool      `db:"is_deleted" json:"is_deleted"`
 }
 
 type AdminRepo struct {
@@ -44,13 +45,13 @@ func (repo *AdminRepo) CreateAdmin(admin *Admin) (*Admin, error) {
 	}
 	admin.Password = hash
 
-	admin.CreatedTs = time.Now().Unix()
+	admin.CreatedTs = time.Now()
 
 	if repo.isUsernameExists(admin.Username) {
 		return nil, errors.New("username already exists")
 	}
 
-	query := `INSERT INTO tbl_admin (username, password, created_ts, is_deleted) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO tbl_admin (username, password, created_ts, is_deleted) VALUES ($1, $2, $3, $4)`
 	_, err = repo.db.Exec(query, admin.Username, admin.Password, admin.CreatedTs, 0)
 	if err != nil {
 		return nil, err
@@ -59,9 +60,10 @@ func (repo *AdminRepo) CreateAdmin(admin *Admin) (*Admin, error) {
 }
 
 func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
-	query := `SELECT id, username, password FROM tbl_admin WHERE username = ? AND is_deleted = ? LIMIT 1`
-	row, err := repo.db.Query(query, username, 0)
+	query := `SELECT id, username, password FROM tbl_admin WHERE username = $1 AND is_deleted = $2 LIMIT 1`
+	row, err := repo.db.Query(query, username, false)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	defer row.Close()
@@ -70,6 +72,7 @@ func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
 	if row.Next() {
 		err = row.Scan(&admin.Id, &admin.Username, &admin.Password)
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 	} else {
@@ -78,15 +81,17 @@ func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
 
 	match, err := checkPassword(admin.Password, password)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	if !match {
 		return nil, errors.New("Invalid username or password")
 	}
 
-	update := `UPDATE tbl_admin SET lastactive_ts = ? WHERE id = ?`
-	_, err = repo.db.Exec(update, time.Now().Unix(), admin.Id)
+	update := `UPDATE tbl_admin SET lastactive_ts = $1 WHERE id = $2`
+	_, err = repo.db.Exec(update, time.Now(), admin.Id)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -94,7 +99,7 @@ func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
 }
 
 func (repo *AdminRepo) isUsernameExists(username string) bool {
-	query := `SELECT id FROM tbl_admin WHERE username = ? AND is_deleted = ? LIMIT 1`
+	query := `SELECT id FROM tbl_admin WHERE username = $1 AND is_deleted = $2 LIMIT 1`
 	row, err := repo.db.Query(query, username, 0)
 	if err != nil {
 		return false

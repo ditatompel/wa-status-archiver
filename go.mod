@@ -4,12 +4,11 @@ go 1.22.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
-	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.52.1
 	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/gosimple/slug v1.14.0
-	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.2.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mdp/qrterminal v1.0.1
 	github.com/spf13/cobra v1.8.0

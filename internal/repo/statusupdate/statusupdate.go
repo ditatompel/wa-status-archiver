@@ -5,20 +5,19 @@ import (
 )
 
 type StatusUpdate struct {
-	Id          int    `json:"id" db:"id"`
-	MsgId       string `json:"msg_id" db:"msg_id"`
-	Account     string `json:"account" db:"account"`
-	SenderPhone string `json:"sender_phone" db:"sender_phone"`
-	SenderJid   string `json:"sender_jid" db:"sender_jid"`
-	SenderName  string `json:"sender_name" db:"sender_name"`
-	Caption     string `json:"caption" db:"caption"`
-	MediaType   string `json:"media_type" db:"media_type"`
-	Mimetype    string `json:"mimetype" db:"mimetype"`
-	Filesize    int    `json:"filesize" db:"filesize"`
-	Height      int    `json:"height" db:"height"`
-	Width       int    `json:"width" db:"width"`
-	FileLoc     string `json:"file_loc" db:"file_loc"`
-	MsgDate     string `json:"msg_date" db:"msg_date"`
+	Id           int    `json:"id" db:"id"`
+	MessageId    string `json:"message_id" db:"message_id"`
+	Account      string `json:"account" db:"account"`
+	SenderJid    string `json:"sender_jid" db:"sender_jid"`
+	SenderName   string `json:"sender_name" db:"sender_name"`
+	Caption      string `json:"caption" db:"caption"`
+	MediaType    string `json:"media_type" db:"media_type"`
+	Mimetype     string `json:"mimetype" db:"mimetype"`
+	Filesize     int    `json:"filesize" db:"filesize"`
+	Height       int    `json:"height" db:"height"`
+	Width        int    `json:"width" db:"width"`
+	FileLocation string `json:"file_location" db:"file_location"`
+	MsgDate      string `json:"msg_date" db:"msg_date"`
 }
 
 type StatusUpdateRepo struct {
@@ -34,9 +33,9 @@ func NewStatusUpdateRepo(db *database.DB) StatusUpdateRepository {
 }
 
 func (repo *StatusUpdateRepo) StatusUpdates() ([]*StatusUpdate, error) {
-	query := `SELECT id, msg_id, account, sender_phone, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_loc, msg_date FROM tbl_status_updates`
+	query := `SELECT id, message_id, our_jid, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_location, msg_date FROM tbl_status_updates`
 
-	rows, err := repo.db.Queryx(query)
+	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +44,26 @@ func (repo *StatusUpdateRepo) StatusUpdates() ([]*StatusUpdate, error) {
 	statusUpdates := []*StatusUpdate{}
 	for rows.Next() {
 		statusUpdate := &StatusUpdate{}
-		err = rows.StructScan(statusUpdate)
+		err := rows.Scan(
+			&statusUpdate.Id,
+			&statusUpdate.MessageId,
+			&statusUpdate.Account,
+			&statusUpdate.SenderJid,
+			&statusUpdate.SenderName,
+			&statusUpdate.Caption,
+			&statusUpdate.MediaType,
+			&statusUpdate.Mimetype,
+			&statusUpdate.Filesize,
+			&statusUpdate.Height,
+			&statusUpdate.Width,
+			&statusUpdate.FileLocation,
+			&statusUpdate.MsgDate,
+		)
 		if err != nil {
 			return nil, err
 		}
 		statusUpdates = append(statusUpdates, statusUpdate)
+
 	}
 	return statusUpdates, nil
 }

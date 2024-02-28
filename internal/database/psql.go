@@ -5,19 +5,23 @@ import (
 
 	"wabot/internal/config"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
+	// _ "github.com/go-sql-driver/mysql"
+
+	_ "github.com/lib/pq"
+
+	// "github.com/jmoiron/sqlx"
+	"database/sql"
 )
 
 // DB holds the database
-type DB struct{ *sqlx.DB }
+type DB struct{ *sql.DB }
 
 // database instance
 var defaultDB = &DB{}
 
 // connect sets the db client of database using configuration
 func (db *DB) connect(cfg *config.DB) (err error) {
-	dbURI := fmt.Sprintf("%s:%s@(%s:%d)/%s",
+	dbURI := fmt.Sprintf("user=%s password=%s host=%s sslmode=disable port=%d dbname=%s",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,
@@ -25,7 +29,7 @@ func (db *DB) connect(cfg *config.DB) (err error) {
 		cfg.Name,
 	)
 
-	db.DB, err = sqlx.Connect("mysql", dbURI)
+	db.DB, err = sql.Open("postgres", dbURI)
 	if err != nil {
 		return err
 	}

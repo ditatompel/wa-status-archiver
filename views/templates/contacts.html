@@ -6,9 +6,11 @@
       class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
     >
       <tr>
-        <th scope="col" class="px-6 py-3">Name</th>
-        <th scope="col" class="px-6 py-3">Phone</th>
+        <th scope="col" class="px-6 py-3">Push Name</th>
+        <th scope="col" class="px-6 py-3">First Name</th>
+        <th scope="col" class="px-6 py-3">Full Name</th>
         <th scope="col" class="px-6 py-3">JID</th>
+        <th scope="col" class="px-6 py-3">Business Name</th>
       </tr>
     </thead>
     <tbody>
@@ -18,10 +20,12 @@
           scope="row"
           class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
         >
-          {{.Name}}
+          {{.PushName.String}}
         </th>
-        <td class="px-6 py-4">{{.Phone}}</td>
-        <td class="px-6 py-4">{{.JID}}</td>
+        <td class="px-6 py-4">{{.FirstName.String}}</td>
+        <td class="px-6 py-4">{{.FullName.String}}</td>
+        <td class="px-6 py-4">{{.TheirJID}}</td>
+        <td class="px-6 py-4">{{.BusinessName.String}}</td>
       </tr>
       {{end}}
     </tbody>

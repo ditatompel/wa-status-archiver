@@ -70,9 +70,11 @@ func init() {
 
 func CreateClient() *whatsmeow.Client {
 	dbLog := waLog.Stdout("Database", LogLevel, true)
-	sql, err := sqlstore.New("sqlite3", "file:data/db/accounts.db?_foreign_keys=on", dbLog)
+	// sql, err := sqlstore.New("sqlite3", "file:data/db/accounts.db?_foreign_keys=on", dbLog)
+	sql := sqlstore.NewWithDB(database.GetDB().DB, "postgres", dbLog)
+	err := sql.Upgrade()
 	if err != nil {
-		dbLog.Errorf("Error connecting to database: %v", err)
+		wLog.Errorf("Failed to upgrade db: %v", err)
 		os.Exit(1)
 	}
 
@@ -90,6 +92,7 @@ func CreateClient() *whatsmeow.Client {
 	wLog.Infof("Account: %s", helpers.PrettyPrint(deviceStore.Account))
 
 	cli = whatsmeow.NewClient(deviceStore, wLog)
+
 	return cli
 }
 
@@ -205,8 +208,6 @@ func HandleMessage(evt *events.Message) {
 		return
 	}
 
-	repo.storeUser(evt.Info.Sender, evt.Info.PushName)
-
 	mediaDir := "data/media"
 	isStatusBroadcast := false
 
@@ -305,13 +306,13 @@ func isStatusUpdate(evt *events.Message) bool {
 }
 
 type mediaInfo struct {
-	caption   string
-	mediaType string
-	filesize  uint64
-	height    uint32
-	width     uint32
-	duration  uint32
-	fileLoc   string
+	caption      string
+	mediaType    string
+	filesize     uint64
+	height       uint32
+	width        uint32
+	duration     uint32
+	fileLocation string
 }
 
 func storeMedia(path string, data []byte, evt *events.Message, username string) (string, error) {
@@ -345,9 +346,9 @@ func storeMedia(path string, data []byte, evt *events.Message, username string) 
 		return "", err
 	}
 
-	fileInfo.fileLoc = mediaDest + "/" + filename
+	fileInfo.fileLocation = mediaDest + "/" + filename
 
-	err = os.WriteFile(fileInfo.fileLoc, data, 0644)
+	err = os.WriteFile(fileInfo.fileLocation, data, 0644)
 	if err != nil {
 		return "", err
 	}
@@ -359,18 +360,17 @@ func storeMedia(path string, data []byte, evt *events.Message, username string) 
 		}
 	}
 
-	return fileInfo.fileLoc, nil
+	return fileInfo.fileLocation, nil
 }
 
 func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) error {
 	sql := `INSERT INTO tbl_status_updates
-	(msg_id, account, sender_phone, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_loc, msg_date)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	(message_id, our_jid, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_location, msg_date)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	_, err := r.db.Exec(sql,
 		msg.Info.ID,
 		r.account.ID,
-		msg.Info.Sender.User,
 		msg.Info.Sender.String(),
 		msg.Info.PushName,
 		mediaInfo.caption,
@@ -379,33 +379,23 @@ func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) e
 		mediaInfo.filesize,
 		mediaInfo.height,
 		mediaInfo.width,
-		mediaInfo.fileLoc,
+		mediaInfo.fileLocation,
 		msg.Info.Timestamp,
 	)
-
 	if err != nil {
 		wLog.Errorf("Failed to store status update: %v", err)
 	}
 	return nil
 }
 
-func (r *waRepo) storeUser(jid types.JID, name string) error {
-	sql := `INSERT INTO tbl_users (phone, jid, server, name) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?`
-	_, err := r.db.Exec(sql, jid.User, jid.String(), jid.Server, name, name)
-	if err != nil {
-		wLog.Errorf("Failed to store user: %v", err)
-	}
-	return err
-}
-
 func (r *waRepo) storeConversation(msg *events.Message) error {
 	sql := `INSERT INTO tbl_chats
-	(room, msg_id, account, sender, name, is_group, msg_type, media_type, category, message, msg_date)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	isGroup := 0
-	if msg.Info.IsGroup {
-		isGroup = 1
-	}
+	(room, message_id, our_jid, sender_jid, sender_name, is_group, msg_type, media_type, category, message, msg_date)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+	// isGroup := 0
+	// if msg.Info.IsGroup {
+	// 	isGroup = 1
+	// }
 
 	_, err := r.db.Exec(sql,
 		msg.Info.Chat.String(),
@@ -413,7 +403,7 @@ func (r *waRepo) storeConversation(msg *events.Message) error {
 		r.account.ID,
 		msg.Info.Sender,
 		msg.Info.PushName,
-		isGroup,
+		msg.Info.IsGroup,
 		msg.Info.Type,
 		msg.Info.MediaType,
 		msg.Info.Category,

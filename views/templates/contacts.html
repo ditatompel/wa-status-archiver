@@ -1,10 +1,10 @@
 {{template "templates/partials/page-header" .}}
 <div class="relative overflow-x-auto">
   <table
-    class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+    class="w-full text-sm text-left rtl:text-right text-gray-400"
   >
     <thead
-      class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+      class="text-xs uppercase bg-gray-700 text-gray-400"
     >
       <tr>
         <th scope="col" class="px-6 py-3">Push Name</th>
@@ -13,22 +13,22 @@
         <th scope="col" class="px-6 py-3">JID</th>
         <th scope="col" class="px-6 py-3">Business Name</th>
       </tr>
-    </thead>
-    <tbody>
-      {{range .Contacts}}
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <th
-          scope="row"
-          class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-        >
-          {{.PushName.String}}
-        </th>
-        <td class="px-6 py-4">{{.FirstName.String}}</td>
-        <td class="px-6 py-4">{{.FullName.String}}</td>
-        <td class="px-6 py-4">{{.TheirJID}}</td>
-        <td class="px-6 py-4">{{.BusinessName.String}}</td>
+      <tr>
+        <td class="px-6 py-3" colspan="5">
+          <input
+            type="text"
+            class="input"
+            name="search"
+            hx-get="/contacts/hxp"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#contacts-body"
+            placeholder="Search name or phone..."
+          />
+        </td>
       </tr>
-      {{end}}
+    </thead>
+    <tbody id="contacts-body">
+      {{ template "templates/partials/contact" . }}
     </tbody>
   </table>
 </div>

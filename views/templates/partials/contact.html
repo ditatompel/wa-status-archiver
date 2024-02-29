@@ -1,0 +1,24 @@
+{{ $next := .NextPage }}
+{{ $search := .Search }}
+
+{{range $i, $elem := .Contacts}}
+<tr class="border-b bg-gray-800 border-gray-700"
+  {{ if eq $i 19 }}
+    hx-get="/contacts/hxp?page={{ $next }}&search={{ $search }}"
+    hx-trigger="revealed"
+    hx-swap="afterend"
+  {{ else }}
+  {{end}}
+>
+  <th
+    scope="row"
+    class="px-6 py-4 font-medium whitespace-nowrap text-white"
+  >
+    {{$elem.PushName.String}}
+  </th>
+  <td class="px-6 py-4">{{$elem.FirstName.String}}</td>
+  <td class="px-6 py-4">{{$elem.FullName.String}}</td>
+  <td class="px-6 py-4">{{$elem.TheirJID}}</td>
+  <td class="px-6 py-4">{{$elem.BusinessName.String}}</td>
+</tr>
+{{end}}

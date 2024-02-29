@@ -38,7 +38,15 @@ func ViewContacts(c *fiber.Ctx) error {
 		template = ""
 	}
 
-	contacts, err := co.Contacts()
+	query := contact.ContactQueryParams{
+		Search:      c.Query("search"),
+		Sort:        c.Query("sort"),
+		Dir:         c.Query("dir"),
+		RowsPerPage: 20,
+		Page:        c.QueryInt("page", 1),
+	}
+
+	contacts, err := co.Contacts(query)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -50,8 +58,36 @@ func ViewContacts(c *fiber.Ctx) error {
 	return c.Render("templates/contacts", fiber.Map{
 		"Title":    "Contacts",
 		"Uri":      "/contacts",
-		"Contacts": contacts,
+		"NextPage": contacts.NextPage,
+		"Contacts": contacts.Contacts,
 	}, template)
+}
+
+func ViewContactPartials(c *fiber.Ctx) error {
+	co := contact.NewContactRepo(database.GetDB())
+
+	query := contact.ContactQueryParams{
+		Search:      c.Query("search"),
+		Sort:        c.Query("sort"),
+		Dir:         c.Query("dir"),
+		RowsPerPage: 20,
+		Page:        c.QueryInt("page", 1),
+	}
+
+	contacts, err := co.Contacts(query)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.Render("templates/partials/contact", fiber.Map{
+		"Search":   query.Search,
+		"NextPage": contacts.NextPage,
+		"Contacts": contacts.Contacts,
+	})
 }
 
 func ViewStatusUpdates(c *fiber.Ctx) error {

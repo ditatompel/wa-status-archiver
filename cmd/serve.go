@@ -50,7 +50,7 @@ func serve() {
 	// logger middleware
 	if appCfg.Debug {
 		app.Use(logger.New(logger.Config{
-			Format: "[${time}] ${status} - ${latency} ${method} ${path} ${ip} ${ua}\n",
+			Format: "[${time}] ${status} - ${latency} ${method} ${path} ${queryParams} ${ip} ${ua}\n",
 		}))
 	}
 

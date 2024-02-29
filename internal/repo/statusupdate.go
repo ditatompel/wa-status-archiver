@@ -1,4 +1,4 @@
-package statusupdate
+package repo
 
 import (
 	"fmt"

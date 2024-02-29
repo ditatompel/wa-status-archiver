@@ -1,16 +1,11 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
-
 	"wabot/internal/config"
 
-	// _ "github.com/go-sql-driver/mysql"
-
 	_ "github.com/lib/pq"
-
-	// "github.com/jmoiron/sqlx"
-	"database/sql"
 )
 
 // DB holds the database

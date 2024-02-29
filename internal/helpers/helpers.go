@@ -56,7 +56,6 @@ func ValidUsername(username string) bool {
 	if len(username) < 5 || len(username) > 20 {
 		return false
 	}
-	// alphanumeric only
 
 	// reject witespace, tabs, newlines, and other special characters
 	if strings.ContainsAny(username, " \t\n") {

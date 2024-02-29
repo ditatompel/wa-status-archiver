@@ -7,7 +7,7 @@ import (
 	"strings"
 	"syscall"
 	"wabot/internal/database"
-	"wabot/internal/repo/admin"
+	"wabot/internal/repo"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -24,25 +24,29 @@ var adminCmd = &cobra.Command{
 		}
 
 		if args[0] == "create" {
-			repo := admin.NewAdminRepo(database.GetDB())
-			a := admin.Admin{
-				Username: stringPrompt("Username:"),
-				Password: passPrompt("Password:"),
-			}
-
-			_, err := repo.CreateAdmin(&a)
-			if err != nil {
-				fmt.Println("Error creating admin:", err)
+			if err := createAdmin(); err != nil {
+				fmt.Println(err)
 				os.Exit(1)
 			}
-
-			fmt.Println("Admin created successfully")
+			fmt.Println("Admin account created")
+			os.Exit(0)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(adminCmd)
+}
+
+func createAdmin() error {
+	admin := repo.NewAdminRepo(database.GetDB())
+	a := repo.Admin{
+		Username: stringPrompt("Username:"),
+		Password: passPrompt("Password:"),
+	}
+	_, err := admin.CreateAdmin(&a)
+	return err
+
 }
 
 func stringPrompt(label string) string {

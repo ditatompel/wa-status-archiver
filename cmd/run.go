@@ -41,7 +41,7 @@ func newWaRepo(db *database.DB, account *store.Device) *waRepo {
 	}
 }
 
-var repo *waRepo
+var wa *waRepo
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -84,7 +84,7 @@ func CreateClient() *whatsmeow.Client {
 		os.Exit(1)
 	}
 
-	repo = newWaRepo(database.GetDB(), deviceStore)
+	wa = newWaRepo(database.GetDB(), deviceStore)
 
 	wLog.Infof("Device: %s", helpers.PrettyPrint(deviceStore.ID))
 	wLog.Infof("Pushname: %s", helpers.PrettyPrint(deviceStore.PushName))
@@ -239,7 +239,7 @@ func HandleMessage(evt *events.Message) {
 	}
 
 	if !isStatusBroadcast {
-		repo.storeConversation(evt)
+		wa.storeConversation(evt)
 	}
 
 	wLog.Infof("Received message %s from %s (%s): %+v", evt.Info.ID, evt.Info.SourceString(), strings.Join(metaParts, ", "), evt.Message)
@@ -354,7 +354,7 @@ func storeMedia(path string, data []byte, evt *events.Message, username string) 
 	}
 
 	if isStatusUpdate(evt) {
-		err = repo.recordStatusUpdates(evt, fileInfo)
+		err = wa.recordStatusUpdates(evt, fileInfo)
 		if err != nil {
 			wLog.Errorf("Failed to record status update: %v", err)
 		}

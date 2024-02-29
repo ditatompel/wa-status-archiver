@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"wabot/api/route"
+	"wabot/api"
 	"wabot/internal/config"
 	"wabot/views"
 
@@ -76,8 +76,8 @@ func serve() {
 		})
 	})
 
-	route.AppRoute(app)
-	route.V1Api(app)
+	api.AppRoute(app)
+	api.V1Api(app)
 
 	// signal channel to capture system calls
 	sigCh := make(chan os.Signal, 1)
@@ -99,8 +99,6 @@ func serve() {
 }
 
 func fiberConfig() fiber.Config {
-	// Return Fiber configuration.
-	// template := html.New("./views", ".html")
 	template := html.NewFileSystem(views.EmbedHandler(), ".html")
 	return fiber.Config{
 		Prefork:     config.AppCfg().Prefork,

@@ -1,6 +1,6 @@
 # WhatsApp Bot
 
-ditatompel's WhatsApp bot
+ditatompel's WhatsApp bot. This is experimental and DO NOT expose UI to the public!
 
 ## Attribution
 

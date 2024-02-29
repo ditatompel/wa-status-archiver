@@ -92,13 +92,20 @@ func ViewContactPartials(c *fiber.Ctx) error {
 
 func ViewStatusUpdates(c *fiber.Ctx) error {
 	su := statusupdate.NewStatusUpdateRepo(database.GetDB())
+	query := statusupdate.StatusUpdateQueryParams{
+		Search:      c.Query("search"),
+		Sort:        c.Query("sort"),
+		Dir:         c.Query("dir"),
+		RowsPerPage: 10,
+		Page:        c.QueryInt("page", 1),
+	}
 
 	template := "templates/layouts/app"
 	if hx := c.Get("Hx-Request"); hx == "true" {
 		template = ""
 	}
 
-	statusUpdates, err := su.StatusUpdates()
+	statusUpdates, err := su.StatusUpdates(query)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -110,6 +117,33 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 	return c.Render("templates/status-updates", fiber.Map{
 		"Title":         "Status Updates",
 		"Uri":           "/status-updates",
-		"StatusUpdates": statusUpdates,
+		"NextPage":      statusUpdates.NextPage,
+		"StatusUpdates": statusUpdates.Statuses,
 	}, template)
+}
+
+func ViewStatusUpdatePartials(c *fiber.Ctx) error {
+	su := statusupdate.NewStatusUpdateRepo(database.GetDB())
+	query := statusupdate.StatusUpdateQueryParams{
+		Search:      c.Query("search"),
+		Sort:        c.Query("sort"),
+		Dir:         c.Query("dir"),
+		RowsPerPage: 10,
+		Page:        c.QueryInt("page", 1),
+	}
+
+	statusUpdates, err := su.StatusUpdates(query)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.Render("templates/partials/statuses", fiber.Map{
+		"Search":        query.Search,
+		"NextPage":      statusUpdates.NextPage,
+		"StatusUpdates": statusUpdates.Statuses,
+	})
 }

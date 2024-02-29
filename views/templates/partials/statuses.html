@@ -1,0 +1,32 @@
+{{ $next := .NextPage }} {{ $search := .Search }}
+{{range $i, $elem := .StatusUpdates}}
+<li class="mb-10 ms-6"
+  {{ if eq $i 9 }}
+    hx-get="/status-updates/hxp?page={{ $next }}&search={{ $search }}"
+    hx-trigger="revealed"
+    hx-swap="afterend"
+  {{ else }}
+  {{end}}
+>
+  <div class="p-4 border rounded-lg shadow-sm bg-gray-700 border-gray-600">
+    <div class="items-center justify-between mb-3 sm:flex">
+      <div class="text-sm font-normal lex text-gray-300 sm:order-first">
+        {{.SenderName}}: {{.Caption}}
+      </div>
+      <div class="mb-2 sm:mb-0">{{.Mimetype}}</div>
+      <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0"
+        >{{.MsgDate}}</time
+      >
+    </div>
+    <div class="p-3 border rounded-lg bg-gray-600 border-gray-500">
+      {{ if eq .MediaType "image" }}
+      <img class="w-full max-w-60 mx-auto" src="/{{.FileLocation}}" />
+      {{ else if eq .MediaType "video" }}
+      <video class="w-full max-w-60 mx-auto" controls>
+        <source src="/{{.FileLocation}}" type="{{.Mimetype}}" />
+      </video>
+      {{ end }}
+    </div>
+  </div>
+</li>
+{{end}}

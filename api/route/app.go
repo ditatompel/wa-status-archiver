@@ -13,4 +13,5 @@ func AppRoute(app *fiber.App) {
 	app.Get("/contacts", middleware.CookieProtected, controller.ViewContacts)
 	app.Get("/contacts/hxp", middleware.CookieProtected, controller.ViewContactPartials)
 	app.Get("/status-updates", middleware.CookieProtected, controller.ViewStatusUpdates)
+	app.Get("/status-updates/hxp", middleware.CookieProtected, controller.ViewStatusUpdatePartials)
 }

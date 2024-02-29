@@ -1,7 +1,11 @@
 BINARY_NAME = wabot
 
+.PHONY: tailwind
+tailwind:
+	npx tailwindcss -i ./views/css/main.css -o ./public/static/css/main.css --minify
+
 .PHONY: build
-build: linux64
+build: tailwind linux64
 
 .PHONY: linux64
 linux64:

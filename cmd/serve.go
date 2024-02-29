@@ -60,6 +60,10 @@ func serve() {
 	}))
 
 	app.Static("/", "./public")
+	app.Static("/media", "./data/media", fiber.Static{
+		Browse:    false,
+		MaxAge:    3600,
+	})
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("templates/index", fiber.Map{}, "templates/layouts/main")
 	})

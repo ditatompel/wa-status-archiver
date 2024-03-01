@@ -2,26 +2,29 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mime"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"wabot/internal/botcmd"
 	"wabot/internal/database"
 	"wabot/internal/helpers"
 
 	"github.com/gosimple/slug"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
+	"github.com/spf13/cobra"
 	"go.mau.fi/whatsmeow"
+	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
-
-	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -86,10 +89,9 @@ func CreateClient() *whatsmeow.Client {
 
 	wa = newWaRepo(database.GetDB(), deviceStore)
 
-	wLog.Infof("Device: %s", helpers.PrettyPrint(deviceStore.ID))
-	wLog.Infof("Pushname: %s", helpers.PrettyPrint(deviceStore.PushName))
-	wLog.Infof("Platform: %s", helpers.PrettyPrint(deviceStore.Platform))
-	wLog.Infof("Account: %s", helpers.PrettyPrint(deviceStore.Account))
+	wLog.Infof("Device: %s", deviceStore.ID)
+	wLog.Infof("Pushname: %s", deviceStore.PushName)
+	wLog.Infof("Platform: %s", deviceStore.Platform)
 
 	cli = whatsmeow.NewClient(deviceStore, wLog)
 
@@ -204,9 +206,9 @@ func HandleMessage(evt *events.Message) {
 	// log.Println(helpers.PrettyPrint(evt))
 	// msg := evt.Message.GetConversation()
 	// log.Println(msg)
-	if evt.Info.IsFromMe {
-		return
-	}
+	// if evt.Info.IsFromMe {
+	// 	return
+	// }
 
 	mediaDir := "data/media"
 	isStatusBroadcast := false
@@ -240,6 +242,15 @@ func HandleMessage(evt *events.Message) {
 
 	if !isStatusBroadcast {
 		wa.storeConversation(evt)
+
+		if !evt.Info.IsFromMe {
+			botresp := botcmd.ParseCmd(evt.Message.GetConversation())
+			if botresp != "" {
+				if err := botSendMsg(evt, botresp); err != nil {
+					wLog.Errorf("Failed to send message: %v", err)
+				}
+			}
+		}
 	}
 
 	wLog.Infof("Received message %s from %s (%s): %+v", evt.Info.ID, evt.Info.SourceString(), strings.Join(metaParts, ", "), evt.Message)
@@ -390,12 +401,8 @@ func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) e
 
 func (r *waRepo) storeConversation(msg *events.Message) error {
 	sql := `INSERT INTO tbl_chats
-	(room, message_id, our_jid, sender_jid, sender_name, is_group, msg_type, media_type, category, message, msg_date)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
-	// isGroup := 0
-	// if msg.Info.IsGroup {
-	// 	isGroup = 1
-	// }
+	(room, message_id, our_jid, sender_jid, sender_name, is_group, msg_type, media_type, category, message, msg_date, is_from_me)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	_, err := r.db.Exec(sql,
 		msg.Info.Chat.String(),
@@ -408,9 +415,50 @@ func (r *waRepo) storeConversation(msg *events.Message) error {
 		msg.Info.MediaType,
 		msg.Info.Category,
 		msg.Message.GetConversation(),
-		msg.Info.Timestamp)
+		msg.Info.Timestamp,
+		msg.Info.IsFromMe,
+	)
 	if err != nil {
 		wLog.Errorf("Failed to store conversation: %v", err)
 	}
 	return err
+}
+
+func botSendMsg(evt *events.Message, message string) error {
+	roomId := evt.Info.Chat.ToNonAD()
+	jid := evt.Info.Sender.String()
+	recipient, ok := helpers.ParseJID(jid)
+	if !ok {
+		wLog.Errorf("Invalid recipient: %s", jid)
+		return errors.New("invalid recipient")
+	}
+	msg := &waProto.Message{
+		// Conversation: proto.String(message),
+		ExtendedTextMessage: &waProto.ExtendedTextMessage{
+			Text: proto.String(message),
+			ContextInfo: &waProto.ContextInfo{
+				StanzaId:    proto.String(evt.Info.ID),
+				Participant: proto.String(recipient.ADString()),
+				QuotedMessage: &waProto.Message{
+					Conversation: proto.String(evt.Message.GetConversation()),
+				},
+			},
+		},
+	}
+
+	messageId := cli.GenerateMessageID()
+	// resp, err := cli.SendMessage(context.Background(), recipient.ToNonAD(), msg)
+	resp, err := cli.SendMessage(
+		context.Background(),
+		roomId,
+		msg,
+		whatsmeow.SendRequestExtra{
+			ID: messageId,
+		})
+	if err != nil {
+		return err
+	}
+	wLog.Infof("Sent message: %s", resp)
+
+	return nil
 }

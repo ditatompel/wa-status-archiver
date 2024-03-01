@@ -55,8 +55,8 @@ func serve() {
 		ByteRange: true,
 		Browse:    false,
 	})
+
 	api.AppRoute(app)
-	api.V1Api(app)
 
 	// signal channel to capture system calls
 	sigCh := make(chan os.Signal, 1)

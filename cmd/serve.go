@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Serve the WebUI",
@@ -38,14 +37,8 @@ func serve() {
 	fiberCfg := fiberConfig()
 	app := fiber.New(fiberCfg)
 
-	// ======================================
-	// GLOBAL MIDDLEWARE
-	// ======================================
-
 	// recover
-	app.Use(recover.New(recover.Config{
-		EnableStackTrace: appCfg.Debug,
-	}))
+	app.Use(recover.New(recover.Config{EnableStackTrace: appCfg.Debug}))
 
 	// logger middleware
 	if appCfg.Debug {
@@ -55,27 +48,13 @@ func serve() {
 	}
 
 	// cookie
-	app.Use(encryptcookie.New(encryptcookie.Config{
-		Key: appCfg.SecretKey,
-	}))
+	app.Use(encryptcookie.New(encryptcookie.Config{Key: appCfg.SecretKey}))
 
 	app.Static("/", "./public")
 	app.Static("/data/media", "./data/media", fiber.Static{
 		ByteRange: true,
 		Browse:    false,
 	})
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("templates/index", fiber.Map{}, "templates/layouts/main")
-	})
-	// ping check
-	app.Get("/ping", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"message": "pong",
-			"data":    nil,
-		})
-	})
-
 	api.AppRoute(app)
 	api.V1Api(app)
 
@@ -87,14 +66,14 @@ func serve() {
 	go func() {
 		// capture sigterm and other system call here
 		<-sigCh
-		fmt.Println("Shutting down server...")
+		fmt.Println("Shutting down HTTP server...")
 		_ = app.Shutdown()
 	}()
 
 	// start http server
 	serverAddr := fmt.Sprintf("%s:%d", appCfg.Host, appCfg.Port)
 	if err := app.Listen(serverAddr); err != nil {
-		fmt.Printf("Oops... server is not running! error: %v", err)
+		fmt.Printf("Server is not running! error: %v", err)
 	}
 }
 

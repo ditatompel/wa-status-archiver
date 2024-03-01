@@ -5,7 +5,7 @@ import (
 )
 
 func AppRoute(app *fiber.App) {
-	app.Get("/login", ViewLogin)
+	app.Get("/", ViewLogin)
 	app.Get("/dashboard", CookieProtected, ViewDashboard)
 	app.Get("/contacts", CookieProtected, ViewContacts)
 	app.Get("/contacts/hxp", CookieProtected, ViewContactPartials)

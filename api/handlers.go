@@ -58,7 +58,7 @@ func Logout(c *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 
-	c.Response().Header.Set("HX-Redirect", "/login")
+	c.Response().Header.Set("HX-Redirect", "/")
 
 	return c.JSON(fiber.Map{
 		"status":  "ok",
@@ -72,7 +72,7 @@ func ViewLogin(c *fiber.Ctx) error {
 	if cookie != "" {
 		return c.Redirect("/dashboard")
 	}
-	return c.Render("templates/login", fiber.Map{
+	return c.Render("templates/index", fiber.Map{
 		"Title": "Login",
 		"Uri":   "login",
 	}, "templates/layouts/main")

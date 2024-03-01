@@ -3,6 +3,7 @@
     "dev": "npx tailwindcss -i ./views/css/main.css -o ./public/main.css --watch"
   },
   "devDependencies": {
+    "htmx.org": "^1.9.10",
     "tailwindcss": "^3.4.1"
   }
 }

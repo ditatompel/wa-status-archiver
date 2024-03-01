@@ -1,19 +1,10 @@
 <aside
-  id="logo-sidebar"
-  class="bg-gray-800 fixed left-0 top-0 z-20 h-screen w-64 -translate-x-full pt-20 shadow-2xl transition-transform sm:translate-x-0"
-  aria-label="Sidebar"
+  class="fixed bottom-0 left-0 z-20 bg-gray-800 w-full border-t border-gray-600 sm:top-0 sm:h-screen sm:w-64 sm:-translate-x-full sm:pt-20 shadow-2xl sm:transition-transform sm:translate-x-0"
+  aria-label="Navigation"
 >
-  <div class="bg-gray800 h-full overflow-y-auto px-3 pb-4">
-    <ul id="sidebar-nav" class="space-y-2 font-medium">
-      <li>
-        <a class="navlink-sidebar{{if eq .Uri "/dashboard"}} active{{end}}" href="/dashboard" hx-get="/dashboard" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Dashboard</span></a>
-      </li>
-      <li>
-        <a class="navlink-sidebar{{if eq .Uri "/contacts"}} active{{end}}" href="/contacts" hx-get="/contacts" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Contacts</span></a>
-      </li>
-      <li>
-        <a class="navlink-sidebar{{if eq .Uri "/status-updates"}} active{{end}}" href="/status-updates" hx-get="/status-updates" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="ms-3">Status Updates</span></a>
-      </li>
-    </ul>
+  <div class="grid gap-1 max-w-lg grid-cols-3 mx-auto sm:grid-cols-1 sm:overflow-y-auto sm:px-3 sm:pb-4">
+    <a class="navlink{{if eq .Uri "/dashboard"}} active{{end}}" href="/dashboard" hx-get="/dashboard" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="sm:ms-3">Dashboard</span></a>
+    <a class="navlink{{if eq .Uri "/contacts"}} active{{end}}" href="/contacts" hx-get="/contacts" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="sm:ms-3">Contacts</span></a>
+    <a class="navlink{{if eq .Uri "/status-updates"}} active{{end}}" href="/status-updates" hx-get="/status-updates" hx-trigger="click" hx-target="#main-content" hx-push-url="true"><span class="sm:ms-3">Status Updates</span></a>
   </div>
 </aside>

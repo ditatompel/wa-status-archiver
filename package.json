@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "npx tailwindcss -i ./views/css/main.css -o ./public/static/css/main.css --watch"
+    "dev": "npx tailwindcss -i ./views/css/main.css -o ./public/main.css --watch"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.1"

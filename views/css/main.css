@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 body {
-  @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white;
+  @apply h-screen bg-gray-800 text-white;
 }
 
-.navlink-sidebar {
-  @apply flex items-center rounded-lg p-2 hover:bg-pink-500 hover:text-black;
+.navlink {
+  @apply inline-flex flex-col items-center justify-center text-center px-5 sm:flex sm:items-start sm:justify-start sm:rounded-lg sm:p-2 hover:bg-pink-500 hover:text-black;
 }
 
-.navlink-sidebar.active {
+.navlink.active {
   @apply !bg-blue-500 !text-white;
 }
 

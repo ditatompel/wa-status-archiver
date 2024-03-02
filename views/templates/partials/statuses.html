@@ -1,8 +1,9 @@
-{{ $next := .NextPage }} {{ $search := .Search }}
+{{ $next := .NextPage }}
+{{ $jid := .JID }}
 {{range $i, $elem := .StatusUpdates}}
 <li class="mb-10 ms-6"
   {{ if eq $i 9 }}
-    hx-get="/status-updates/hxp?page={{ $next }}&search={{ $search }}"
+    hx-get="/status-updates/hxp?page={{ $next }}&jid={{ $jid }}"
     hx-trigger="revealed"
     hx-swap="afterend"
   {{ else }}

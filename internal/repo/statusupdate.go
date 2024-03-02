@@ -7,19 +7,19 @@ import (
 )
 
 type StatusUpdate struct {
-	Id           int    `json:"id" db:"id"`
-	MessageId    string `json:"message_id" db:"message_id"`
-	Account      string `json:"account" db:"account"`
-	SenderJid    string `json:"sender_jid" db:"sender_jid"`
-	SenderName   string `json:"sender_name" db:"sender_name"`
-	Caption      string `json:"caption" db:"caption"`
-	MediaType    string `json:"media_type" db:"media_type"`
-	Mimetype     string `json:"mimetype" db:"mimetype"`
-	Filesize     int    `json:"filesize" db:"filesize"`
-	Height       int    `json:"height" db:"height"`
-	Width        int    `json:"width" db:"width"`
-	FileLocation string `json:"file_location" db:"file_location"`
-	MsgDate      string `json:"msg_date" db:"msg_date"`
+	Id           int    `db:"id"`
+	MessageId    string `db:"message_id"`
+	Account      string `db:"account"`
+	SenderJid    string `db:"sender_jid"`
+	SenderName   string `db:"sender_name"`
+	Caption      string `db:"caption"`
+	MediaType    string `db:"media_type"`
+	Mimetype     string `db:"mimetype"`
+	Filesize     int    `db:"filesize"`
+	Height       int    `db:"height"`
+	Width        int    `db:"width"`
+	FileLocation string `db:"file_location"`
+	MsgDate      string `db:"msg_date"`
 }
 
 type StatusUpdates struct {
@@ -30,11 +30,11 @@ type StatusUpdates struct {
 }
 
 type StatusUpdateQueryParams struct {
-	Search      string `json:"search"`
-	Sort        string `json:"sort"`
-	Dir         string `json:"dir"`
-	RowsPerPage int    `json:"rows_per_page"`
-	Page        int    `json:"page"`
+	JID         string
+	Sort        string
+	Dir         string
+	RowsPerPage int
+	Page        int
 }
 
 type StatusUpdateRepo struct {
@@ -42,11 +42,40 @@ type StatusUpdateRepo struct {
 }
 
 type StatusUpdateRepository interface {
+	Contacts() ([]contacts, error)
 	StatusUpdates(q StatusUpdateQueryParams) (StatusUpdates, error)
 }
 
 func NewStatusUpdateRepo(db *database.DB) StatusUpdateRepository {
 	return &StatusUpdateRepo{db}
+}
+
+type contacts struct {
+	JID      string `db:"jid"`
+	PushName string `db:"push_name"`
+}
+
+func (repo *StatusUpdateRepo) Contacts() ([]contacts, error) {
+	query := `SELECT status.sender_jid AS jid, contact.push_name
+	FROM tbl_status_updates AS status
+	LEFT JOIN whatsmeow_contacts AS contact ON status.sender_jid = contact.their_jid
+	GROUP BY jid, push_name
+	ORDER BY push_name ASC`
+	rows, err := repo.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res := []contacts{}
+	for rows.Next() {
+		contact := contacts{}
+		if err := rows.Scan(&contact.JID, &contact.PushName); err != nil {
+			return nil, err
+		}
+		res = append(res, contact)
+	}
+	return res, nil
 }
 
 func (repo *StatusUpdateRepo) StatusUpdates(q StatusUpdateQueryParams) (StatusUpdates, error) {
@@ -55,9 +84,9 @@ func (repo *StatusUpdateRepo) StatusUpdates(q StatusUpdateQueryParams) (StatusUp
 
 	queryParams = append(queryParams, q.RowsPerPage, (q.Page-1)*q.RowsPerPage)
 
-	if q.Search != "" {
-		where = "WHERE sender_name ILIKE $3 OR caption ILIKE $4"
-		queryParams = append(queryParams, "%"+q.Search+"%", "%"+q.Search+"%")
+	if q.JID != "" {
+		where = "WHERE sender_jid = $3"
+		queryParams = append(queryParams, q.JID)
 	}
 
 	allowedSorts := []string{"their_jid", "push_name"}
@@ -71,7 +100,10 @@ func (repo *StatusUpdateRepo) StatusUpdates(q StatusUpdateQueryParams) (StatusUp
 	}
 
 	statusUpdates := StatusUpdates{}
-	query := fmt.Sprintf(`SELECT id, message_id, our_jid, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_location, msg_date FROM tbl_status_updates %s ORDER BY %s %s LIMIT $1 OFFSET $2`, where, q.Sort, sortDir)
+	query := fmt.Sprintf(`SELECT
+		id, message_id, our_jid, sender_jid, sender_name, caption, media_type,
+		mimetype, filesize, height, width, file_location, msg_date
+	FROM tbl_status_updates %s ORDER BY %s %s LIMIT $1 OFFSET $2`, where, q.Sort, sortDir)
 
 	rows, err := repo.db.Query(query, queryParams...)
 	if err != nil {

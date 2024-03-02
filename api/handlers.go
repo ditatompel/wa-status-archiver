@@ -152,7 +152,7 @@ func ViewContactPartials(c *fiber.Ctx) error {
 func ViewStatusUpdates(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
-		Search:      c.Query("search"),
+		JID:         c.Query("jid"),
 		Sort:        c.Query("sort"),
 		Dir:         c.Query("dir"),
 		RowsPerPage: 10,
@@ -172,11 +172,14 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 			"data":    nil,
 		})
 	}
+	contacts, _ := su.Contacts()
 
 	return c.Render("templates/status-updates", fiber.Map{
 		"Title":         "Status Updates",
 		"Uri":           "/status-updates",
 		"NextPage":      statusUpdates.NextPage,
+		"Contacts":      contacts,
+		"JID":           query.JID,
 		"StatusUpdates": statusUpdates.Statuses,
 	}, template)
 }
@@ -184,7 +187,7 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 func ViewStatusUpdatePartials(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
-		Search:      c.Query("search"),
+		JID:         c.Query("jid"),
 		Sort:        c.Query("sort"),
 		Dir:         c.Query("dir"),
 		RowsPerPage: 10,
@@ -201,7 +204,7 @@ func ViewStatusUpdatePartials(c *fiber.Ctx) error {
 	}
 
 	return c.Render("templates/partials/statuses", fiber.Map{
-		"Search":        query.Search,
+		"JID":           query.JID,
 		"NextPage":      statusUpdates.NextPage,
 		"StatusUpdates": statusUpdates.Statuses,
 	})

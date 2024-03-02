@@ -55,7 +55,7 @@ type contacts struct {
 
 func (repo *StatusUpdateRepo) Contacts() ([]contacts, error) {
 	query := `SELECT status.sender_jid AS jid, contact.push_name
-	FROM tbl_status_updates AS status
+	FROM tbl_statuses AS status
 	LEFT JOIN whatsmeow_contacts AS contact ON status.sender_jid = contact.their_jid
 	GROUP BY jid, push_name
 	ORDER BY push_name ASC`
@@ -91,7 +91,7 @@ func (repo *StatusUpdateRepo) StatusUpdates(q StatusUpdateQueryParams) (StatusUp
 	query := fmt.Sprintf(`SELECT
 		id, message_id, our_jid, sender_jid, sender_name, caption, media_type,
 		mimetype, filesize, height, width, file_location, msg_date
-	FROM tbl_status_updates %s ORDER BY msg_date DESC LIMIT $1 OFFSET $2`, where)
+	FROM tbl_statuses %s ORDER BY msg_date DESC LIMIT $1 OFFSET $2`, where)
 
 	rows, err := repo.db.Query(query, queryParams...)
 	if err != nil {

@@ -25,6 +25,7 @@ And many indirect dependencies can be found in `go.mod`, `go.sum`, `package.json
 npm install
 make copyhtmx
 npm run dev
+go run . --help
 ```
 
 ## Build binary file
@@ -33,4 +34,20 @@ npm run dev
 npm ci
 make build
 ```
+
+The binary file will be placed in the `bin` directory.
+
+## FAQ
+
+### Is this project stable?
+
+Definitely **no**.
+
+### What database is supported?
+
+Although `whatsmeow` support SQLite and PostgreSQL, I only create this project on top of PostgreSQL. Feel free to adapt the database driver to fit with your needs.
+
+### Is this project support for multiple account?
+
+No, this project only support one account.
 

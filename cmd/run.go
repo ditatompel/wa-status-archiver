@@ -82,6 +82,11 @@ func CreateClient() *whatsmeow.Client {
 		wLog.Errorf("Failed to upgrade db: %v", err)
 		os.Exit(1)
 	}
+	err = database.CreateSchema(database.GetDB())
+	if err != nil {
+		wLog.Errorf("Error creating app schema: %v", err)
+		os.Exit(1)
+	}
 
 	deviceStore, err := sql.GetFirstDevice()
 	if err != nil {
@@ -367,7 +372,7 @@ func storeMedia(path string, data []byte, evt *events.Message, username string) 
 }
 
 func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) error {
-	sql := `INSERT INTO tbl_status_updates
+	sql := `INSERT INTO tbl_statuses
 	(message_id, our_jid, sender_jid, sender_name, caption, media_type, mimetype, filesize, height, width, file_location, msg_date)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
@@ -393,22 +398,22 @@ func (r *waRepo) recordStatusUpdates(msg *events.Message, mediaInfo mediaInfo) e
 
 func (r *waRepo) storeConversation(msg *events.Message) error {
 	sql := `INSERT INTO tbl_chats
-	(room, message_id, our_jid, sender_jid, sender_name, is_group, msg_type, media_type, category, message, msg_date, is_from_me)
+	(message_id, room_id, our_jid, sender_jid, sender_name, is_group, is_from_me, msg_type, media_type, msg_conversation, category, msg_date)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	_, err := r.db.Exec(sql,
-		msg.Info.Chat.String(),
 		msg.Info.ID,
+		msg.Info.Chat.String(),
 		r.account.ID,
 		msg.Info.Sender,
 		msg.Info.PushName,
 		msg.Info.IsGroup,
+		msg.Info.IsFromMe,
 		msg.Info.Type,
 		msg.Info.MediaType,
-		msg.Info.Category,
 		msg.Message.GetConversation(),
+		msg.Info.Category,
 		msg.Info.Timestamp,
-		msg.Info.IsFromMe,
 	)
 	if err != nil {
 		wLog.Errorf("Failed to store conversation: %v", err)

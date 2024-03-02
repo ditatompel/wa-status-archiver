@@ -17,7 +17,6 @@ type Admin struct {
 	Password     string    `db:"password"`
 	LastactiveTs time.Time `db:"lastactive_ts"`
 	CreatedTs    time.Time `db:"created_ts"`
-	IsDeleted    bool      `db:"is_deleted"`
 }
 
 type AdminRepo struct {
@@ -52,8 +51,8 @@ func (repo *AdminRepo) CreateAdmin(admin *Admin) (*Admin, error) {
 		return nil, errors.New("username already exists")
 	}
 
-	query := `INSERT INTO tbl_admin (username, password, created_ts, is_deleted) VALUES ($1, $2, $3, $4)`
-	_, err = repo.db.Exec(query, admin.Username, admin.Password, admin.CreatedTs, 0)
+	query := `INSERT INTO tbl_admin (username, password, created_ts) VALUES ($1, $2, $3)`
+	_, err = repo.db.Exec(query, admin.Username, admin.Password, admin.CreatedTs)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +60,8 @@ func (repo *AdminRepo) CreateAdmin(admin *Admin) (*Admin, error) {
 }
 
 func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
-	query := `SELECT id, username, password FROM tbl_admin WHERE username = $1 AND is_deleted = $2 LIMIT 1`
-	row, err := repo.db.Query(query, username, false)
+	query := `SELECT id, username, password FROM tbl_admin WHERE username = $1 LIMIT 1`
+	row, err := repo.db.Query(query, username)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -100,8 +99,8 @@ func (repo *AdminRepo) Login(username, password string) (*Admin, error) {
 }
 
 func (repo *AdminRepo) isUsernameExists(username string) bool {
-	query := `SELECT id FROM tbl_admin WHERE username = $1 AND is_deleted = $2 LIMIT 1`
-	row, err := repo.db.Query(query, username, 0)
+	query := `SELECT id FROM tbl_admin WHERE username = $1 LIMIT 1`
+	row, err := repo.db.Query(query, username)
 	if err != nil {
 		return false
 	}

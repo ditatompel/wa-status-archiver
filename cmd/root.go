@@ -10,9 +10,7 @@ import (
 
 const AppVer = "0.0.1"
 
-var (
-	LogLevel = "INFO"
-)
+var LogLevel string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -35,16 +33,9 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.wabot.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	config.LoadAll(".env")
+
+	LogLevel = config.AppCfg().LogLevel
 	// connect to DB
 	if err := database.ConnectDB(); err != nil {
 		panic(err)

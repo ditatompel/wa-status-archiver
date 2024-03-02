@@ -18,6 +18,7 @@ import (
 	"github.com/mdp/qrterminal"
 	"github.com/spf13/cobra"
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/appstate"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -125,31 +126,30 @@ func ConnectClient(client *whatsmeow.Client) {
 	}
 }
 
+// see https://github.com/tulir/whatsmeow/blob/main/mdtest/main.go
 func HandleEvent(rawEvt interface{}) {
 	switch evt := rawEvt.(type) {
 	case *events.AppStateSyncComplete:
-		wLog.Infof("Marked self as available")
-		// if len(cli.Store.PushName) > 0 && evt.Name == appstate.WAPatchCriticalBlock {
-		// 	err := cli.SendPresence(types.PresenceAvailable)
-		// 	if err != nil {
-		// 		wLog.Warnf("Failed to send available presence: %v", err)
-		// 	} else {
-		// 		wLog.Infof("Marked self as available")
-		// 	}
-		// }
+		if len(cli.Store.PushName) > 0 && evt.Name == appstate.WAPatchCriticalBlock {
+			err := cli.SendPresence(types.PresenceAvailable)
+			if err != nil {
+				wLog.Warnf("Failed to send available presence: %v", err)
+			} else {
+				wLog.Infof("Marked self as available")
+			}
+		}
 	case *events.Connected, *events.PushNameSetting:
 		if len(cli.Store.PushName) == 0 {
 			return
 		}
-		wLog.Infof("Marked self as available")
 		// Send presence available when connecting and when the pushname is changed.
 		// This makes sure that outgoing messages always have the right pushname.
-		// err := cli.SendPresence(types.PresenceAvailable)
-		// if err != nil {
-		// 	wLog.Warnf("Failed to send available presence: %v", err)
-		// } else {
-		// 	wLog.Infof("Marked self as available")
-		// }
+		err := cli.SendPresence(types.PresenceAvailable)
+		if err != nil {
+			wLog.Warnf("Failed to send available presence: %v", err)
+		} else {
+			wLog.Infof("Marked self as available")
+		}
 	case *events.StreamReplaced:
 		os.Exit(0)
 	case *events.Message:
@@ -197,19 +197,12 @@ func HandleEvent(rawEvt interface{}) {
 	case *events.Blocklist:
 		wLog.Infof("Blocklist event: %+v", evt)
 	default:
-		wLog.Infof("Unknown event: %T\n", evt)
-		wLog.Infof("EVENT: %s\n", helpers.PrettyPrint(evt))
+		wLog.Infof("Untracked event: %T", evt)
+		wLog.Debugf("EVENT: %s", helpers.PrettyPrint(evt))
 	}
 }
 
 func HandleMessage(evt *events.Message) {
-	// log.Println(helpers.PrettyPrint(evt))
-	// msg := evt.Message.GetConversation()
-	// log.Println(msg)
-	// if evt.Info.IsFromMe {
-	// 	return
-	// }
-
 	mediaDir := "data/media"
 	isStatusBroadcast := false
 
@@ -253,7 +246,8 @@ func HandleMessage(evt *events.Message) {
 		}
 	}
 
-	wLog.Infof("Received message %s from %s (%s): %+v", evt.Info.ID, evt.Info.SourceString(), strings.Join(metaParts, ", "), evt.Message)
+	wLog.Infof("Received message %s from %s", evt.Info.ID, evt.Info.SourceString())
+	wLog.Debugf("%s DATA: (%s): %+v", evt.Info.ID, strings.Join(metaParts, ", "), evt.Message)
 
 	if isStatusBroadcast {
 		wLog.Infof("Status broadcast received: %v", evt.Info.Chat)
@@ -352,21 +346,18 @@ func storeMedia(path string, data []byte, evt *events.Message, username string) 
 
 	userSlug := slug.Make(username)
 	mediaDest := fmt.Sprintf("%s/%s_%s", path, evt.Info.Sender.User, userSlug)
-	err := os.MkdirAll(mediaDest, 0755)
-	if err != nil {
+	if err := os.MkdirAll(mediaDest, 0755); err != nil {
 		return "", err
 	}
 
 	fileInfo.fileLocation = mediaDest + "/" + filename
 
-	err = os.WriteFile(fileInfo.fileLocation, data, 0644)
-	if err != nil {
+	if err := os.WriteFile(fileInfo.fileLocation, data, 0644); err != nil {
 		return "", err
 	}
 
 	if isStatusUpdate(evt) {
-		err = wa.recordStatusUpdates(evt, fileInfo)
-		if err != nil {
+		if err := wa.recordStatusUpdates(evt, fileInfo); err != nil {
 			wLog.Errorf("Failed to record status update: %v", err)
 		}
 	}

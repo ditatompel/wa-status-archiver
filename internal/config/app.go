@@ -12,6 +12,7 @@ type App struct {
     Port        int
     ProxyHeader string
 	SecretKey   string
+	LogLevel    string
 }
 
 var app = &App{}
@@ -28,4 +29,11 @@ func LoadApp() {
     app.Prefork, _ = strconv.ParseBool(os.Getenv("APP_PREFORK"))
     app.ProxyHeader = os.Getenv("APP_PROXY_HEADER")
 	app.SecretKey = os.Getenv("SECRET_KEY")
+	app.LogLevel = os.Getenv("LOG_LEVEL")
+	if app.LogLevel == "" {
+		app.LogLevel = "INFO"
+	}
+	if app.Debug {
+		app.LogLevel = "DEBUG"
+	}
 }

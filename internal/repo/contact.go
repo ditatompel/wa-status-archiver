@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"database/sql"
 	"fmt"
 	"slices"
 
@@ -8,12 +9,12 @@ import (
 )
 
 type Contact struct {
-	OurJID       string              `db:"our_jid" json:"our_jid"`
-	TheirJID     string              `db:"their_jid" json:"their_jid"`
-	FirstName    database.NullString `db:"first_name" json:"first_name"`
-	FullName     database.NullString `db:"full_name" json:"full_name"`
-	PushName     database.NullString `db:"push_name" json:"push_name"`
-	BusinessName database.NullString `db:"business_name" json:"business_name"`
+	OurJID       string         `db:"our_jid"`
+	TheirJID     string         `db:"their_jid" `
+	FirstName    sql.NullString `db:"first_name"`
+	FullName     sql.NullString `db:"full_name"`
+	PushName     sql.NullString `db:"push_name"`
+	BusinessName sql.NullString `db:"business_name"`
 }
 
 type Contacts struct {
@@ -24,11 +25,11 @@ type Contacts struct {
 }
 
 type ContactQueryParams struct {
-	Search      string `json:"search"`
-	Sort        string `json:"sort"`
-	Dir         string `json:"dir"`
-	RowsPerPage int    `json:"rows_per_page"`
-	Page        int    `json:"page"`
+	Search      string
+	Sort        string
+	Dir         string
+	RowsPerPage int
+	Page        int
 }
 
 type ContactRepo struct {

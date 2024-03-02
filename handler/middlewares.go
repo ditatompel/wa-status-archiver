@@ -7,11 +7,8 @@ import (
 func CookieProtected(c *fiber.Ctx) error {
 	cookie := c.Cookies("wabot_ui")
 	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Unauthorized",
-			"data":    nil,
-		})
+		c.Response().Header.Set("HX-Redirect", "/")
+		return c.Redirect("/")
 	}
 
 	return c.Next()

@@ -12,12 +12,12 @@ import (
 )
 
 type Admin struct {
-	Id           int       `db:"id" json:"id"`
-	Username     string    `db:"username" json:"username"`
-	Password     string    `db:"password" json:"password,omitempty"`
-	LastactiveTs time.Time `db:"lastactive_ts" json:"lastactive_ts"`
-	CreatedTs    time.Time `db:"created_ts" json:"created_ts"`
-	IsDeleted    bool      `db:"is_deleted" json:"is_deleted"`
+	Id           int       `db:"id"`
+	Username     string    `db:"username"`
+	Password     string    `db:"password"`
+	LastactiveTs time.Time `db:"lastactive_ts"`
+	CreatedTs    time.Time `db:"created_ts"`
+	IsDeleted    bool      `db:"is_deleted"`
 }
 
 type AdminRepo struct {

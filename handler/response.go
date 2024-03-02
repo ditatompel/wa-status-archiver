@@ -14,11 +14,7 @@ import (
 func Login(c *fiber.Ctx) error {
 	payload := repo.Admin{}
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusUnprocessableEntity).Send([]byte(err.Error()))
 	}
 
 	admin := repo.NewAdminRepo(database.GetDB())
@@ -27,11 +23,7 @@ func Login(c *fiber.Ctx) error {
 		triggerJson, _ := json.Marshal(map[string]interface{}{"err": err.Error()})
 
 		c.Response().Header.Set("HX-Trigger", string(triggerJson))
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusUnauthorized).Send([]byte(err.Error()))
 	}
 
 	token := fmt.Sprintf("auth_%d_%d", res.Id, time.Now().Unix())
@@ -43,12 +35,7 @@ func Login(c *fiber.Ctx) error {
 	})
 
 	c.Response().Header.Set("HX-Redirect", "/dashboard")
-
-	return c.JSON(fiber.Map{
-		"status":  "ok",
-		"message": "Logged in",
-		"data":    nil,
-	})
+	return c.Send([]byte("Logged in"))
 }
 
 func Logout(c *fiber.Ctx) error {
@@ -60,12 +47,7 @@ func Logout(c *fiber.Ctx) error {
 	})
 
 	c.Response().Header.Set("HX-Redirect", "/")
-
-	return c.JSON(fiber.Map{
-		"status":  "ok",
-		"message": "Logged out",
-		"data":    nil,
-	})
+	return c.Send([]byte("Logged out"))
 }
 
 func ViewLogin(c *fiber.Ctx) error {
@@ -73,10 +55,7 @@ func ViewLogin(c *fiber.Ctx) error {
 	if cookie != "" {
 		return c.Redirect("/dashboard")
 	}
-	return c.Render("templates/index", fiber.Map{
-		"Title": "Login",
-		"Uri":   "login",
-	}, "templates/layouts/main")
+	return c.Render("templates/index", fiber.Map{}, "templates/layouts/main")
 }
 
 func ViewDashboard(c *fiber.Ctx) error {
@@ -108,11 +87,7 @@ func ViewContacts(c *fiber.Ctx) error {
 
 	contacts, err := co.Contacts(query)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusInternalServerError).Send([]byte(err.Error()))
 	}
 
 	return c.Render("templates/contacts", fiber.Map{
@@ -136,11 +111,7 @@ func ViewContactPartials(c *fiber.Ctx) error {
 
 	contacts, err := co.Contacts(query)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusInternalServerError).Send([]byte(err.Error()))
 	}
 
 	return c.Render("templates/partials/contact", fiber.Map{
@@ -167,11 +138,7 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 
 	statusUpdates, err := su.StatusUpdates(query)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusInternalServerError).Send([]byte(err.Error()))
 	}
 	contacts, _ := su.Contacts()
 
@@ -197,11 +164,7 @@ func ViewStatusUpdatePartials(c *fiber.Ctx) error {
 
 	statusUpdates, err := su.StatusUpdates(query)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusInternalServerError).Send([]byte(err.Error()))
 	}
 
 	return c.Render("templates/partials/statuses", fiber.Map{

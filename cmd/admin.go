@@ -20,7 +20,7 @@ var adminCmd = &cobra.Command{
 	Long:  `Create an admin account for WebUI access.`,
 	Run: func(_ *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("Usage: wabot admin create")
+			fmt.Println("Usage: wa-status-archiver admin create")
 			os.Exit(1)
 		}
 

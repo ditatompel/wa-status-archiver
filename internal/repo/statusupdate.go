@@ -2,7 +2,6 @@ package repo
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/ditatompel/wa-status-archiver/internal/database"
 )
@@ -32,8 +31,6 @@ type StatusUpdates struct {
 
 type StatusUpdateQueryParams struct {
 	JID         string
-	Sort        string
-	Dir         string
 	RowsPerPage int
 	Page        int
 }
@@ -90,21 +87,11 @@ func (repo *StatusUpdateRepo) StatusUpdates(q StatusUpdateQueryParams) (StatusUp
 		queryParams = append(queryParams, q.JID)
 	}
 
-	allowedSorts := []string{"their_jid", "push_name"}
-	if !slices.Contains(allowedSorts, q.Sort) {
-		q.Sort = "msg_date"
-	}
-
-	sortDir := "DESC"
-	if q.Dir == "asc" {
-		sortDir = q.Dir
-	}
-
 	statusUpdates := StatusUpdates{}
 	query := fmt.Sprintf(`SELECT
 		id, message_id, our_jid, sender_jid, sender_name, caption, media_type,
 		mimetype, filesize, height, width, file_location, msg_date
-	FROM tbl_status_updates %s ORDER BY %s %s LIMIT $1 OFFSET $2`, where, q.Sort, sortDir)
+	FROM tbl_status_updates %s ORDER BY msg_date DESC LIMIT $1 OFFSET $2`, where)
 
 	rows, err := repo.db.Query(query, queryParams...)
 	if err != nil {

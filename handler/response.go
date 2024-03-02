@@ -79,8 +79,6 @@ func ViewContacts(c *fiber.Ctx) error {
 
 	query := repo.ContactQueryParams{
 		Search:      c.Query("search"),
-		Sort:        c.Query("sort"),
-		Dir:         c.Query("dir"),
 		RowsPerPage: 20,
 		Page:        c.QueryInt("page", 1),
 	}
@@ -103,8 +101,6 @@ func ViewContactPartials(c *fiber.Ctx) error {
 
 	query := repo.ContactQueryParams{
 		Search:      c.Query("search"),
-		Sort:        c.Query("sort"),
-		Dir:         c.Query("dir"),
 		RowsPerPage: 20,
 		Page:        c.QueryInt("page", 1),
 	}
@@ -125,8 +121,6 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
 		JID:         c.Query("jid"),
-		Sort:        c.Query("sort"),
-		Dir:         c.Query("dir"),
 		RowsPerPage: 10,
 		Page:        c.QueryInt("page", 1),
 	}
@@ -156,8 +150,6 @@ func ViewStatusUpdatePartials(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
 		JID:         c.Query("jid"),
-		Sort:        c.Query("sort"),
-		Dir:         c.Query("dir"),
 		RowsPerPage: 10,
 		Page:        c.QueryInt("page", 1),
 	}

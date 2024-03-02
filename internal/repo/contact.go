@@ -3,7 +3,6 @@ package repo
 import (
 	"database/sql"
 	"fmt"
-	"slices"
 
 	"github.com/ditatompel/wa-status-archiver/internal/database"
 )
@@ -26,8 +25,6 @@ type Contacts struct {
 
 type ContactQueryParams struct {
 	Search      string
-	Sort        string
-	Dir         string
 	RowsPerPage int
 	Page        int
 }
@@ -57,19 +54,9 @@ func (repo *ContactRepo) Contacts(q ContactQueryParams) (Contacts, error) {
 
 	contacts := Contacts{}
 
-	allowedSorts := []string{"their_jid", "push_name"}
-	if !slices.Contains(allowedSorts, q.Sort) {
-		q.Sort = "push_name"
-	}
-
-	sortDir := "DESC"
-	if q.Dir == "asc" {
-		sortDir = q.Dir
-	}
-
 	query := fmt.Sprintf(`SELECT
 		our_jid, their_jid, first_name, full_name, push_name, business_name
-		FROM whatsmeow_contacts %s ORDER BY %s %s LIMIT $1 OFFSET $2`, where, q.Sort, sortDir)
+		FROM whatsmeow_contacts %s ORDER BY push_name DESC LIMIT $1 OFFSET $2`, where)
 
 	rows, err := repo.db.Query(query, queryParams...)
 	if err != nil {

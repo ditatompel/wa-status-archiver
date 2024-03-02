@@ -1,11 +1,12 @@
-package api
+package handler
 
 import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"wabot/internal/database"
-	"wabot/internal/repo"
+
+	"github.com/ditatompel/wa-status-archiver/internal/database"
+	"github.com/ditatompel/wa-status-archiver/internal/repo"
 
 	"github.com/gofiber/fiber/v2"
 )

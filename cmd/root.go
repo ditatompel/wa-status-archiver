@@ -3,8 +3,9 @@ package cmd
 import (
 	"os"
 
-	"wabot/internal/config"
-	"wabot/internal/database"
+	"github.com/ditatompel/wa-status-archiver/internal/config"
+	"github.com/ditatompel/wa-status-archiver/internal/database"
+
 	"github.com/spf13/cobra"
 )
 
@@ -12,19 +13,14 @@ const AppVer = "0.0.1"
 
 var LogLevel string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "wabot",
-	Short: "ditatompel's WhatsApp bot",
-	Long: `A WhatsApp bot run for ditatompel's project.`,
+	Use:     "wa-status-archiver",
+	Short:   "WA Status Archiver",
+	Long:    `A "bot" that listen to WhatsApp WebSocket and download all videos
+and images from your contact status updates.`,
 	Version: AppVer,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -34,7 +30,6 @@ func Execute() {
 
 func init() {
 	config.LoadAll(".env")
-
 	LogLevel = config.AppCfg().LogLevel
 	// connect to DB
 	if err := database.ConnectDB(); err != nil {

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	"wabot/internal/database"
-	"wabot/internal/helpers"
+
+	"github.com/ditatompel/wa-status-archiver/internal/database"
+	"github.com/ditatompel/wa-status-archiver/internal/helpers"
 
 	"github.com/alexedwards/argon2id"
 )

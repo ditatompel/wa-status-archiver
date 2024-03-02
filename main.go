@@ -1,6 +1,6 @@
 package main
 
-import "wabot/cmd"
+import "github.com/ditatompel/wa-status-archiver/cmd"
 
 func main() {
 	cmd.Execute()

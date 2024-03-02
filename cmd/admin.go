@@ -6,8 +6,9 @@ import (
 	"os"
 	"strings"
 	"syscall"
-	"wabot/internal/database"
-	"wabot/internal/repo"
+
+	"github.com/ditatompel/wa-status-archiver/internal/database"
+	"github.com/ditatompel/wa-status-archiver/internal/repo"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -46,7 +47,6 @@ func createAdmin() error {
 	}
 	_, err := admin.CreateAdmin(&a)
 	return err
-
 }
 
 func stringPrompt(label string) string {

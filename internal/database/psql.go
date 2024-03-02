@@ -3,7 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"wabot/internal/config"
+
+	"github.com/ditatompel/wa-status-archiver/internal/config"
 
 	_ "github.com/lib/pq"
 )

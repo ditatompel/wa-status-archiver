@@ -9,9 +9,10 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"wabot/internal/botcmd"
-	"wabot/internal/database"
-	"wabot/internal/helpers"
+
+	"github.com/ditatompel/wa-status-archiver/internal/botcmd"
+	"github.com/ditatompel/wa-status-archiver/internal/database"
+	"github.com/ditatompel/wa-status-archiver/internal/helpers"
 
 	"github.com/gosimple/slug"
 	_ "github.com/mattn/go-sqlite3"

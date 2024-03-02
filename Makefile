@@ -1,6 +1,6 @@
 .PHONY: tailwind copyhtmx build linux64
 
-BINARY_NAME = wabot
+BINARY_NAME = wa-status-archiver
 
 build: copyhtmx tailwind linux64
 

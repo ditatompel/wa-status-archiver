@@ -5,9 +5,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"wabot/api"
-	"wabot/internal/config"
-	"wabot/views"
+
+	"github.com/ditatompel/wa-status-archiver/handler"
+	"github.com/ditatompel/wa-status-archiver/internal/config"
+	"github.com/ditatompel/wa-status-archiver/views"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
@@ -56,7 +57,7 @@ func serve() {
 		Browse:    false,
 	})
 
-	api.AppRoute(app)
+	handler.AppRoute(app)
 
 	// signal channel to capture system calls
 	sigCh := make(chan os.Signal, 1)
@@ -82,7 +83,7 @@ func fiberConfig() fiber.Config {
 	return fiber.Config{
 		Prefork:     config.AppCfg().Prefork,
 		ProxyHeader: config.AppCfg().ProxyHeader,
-		AppName:     "wabot HTTP server " + AppVer,
+		AppName:     "WA Status Archiver HTTP server " + AppVer,
 		Views:       template,
 	}
 }

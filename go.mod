@@ -1,4 +1,4 @@
-module wabot
+module github.com/ditatompel/wa-status-archiver
 
 go 1.22.0
 

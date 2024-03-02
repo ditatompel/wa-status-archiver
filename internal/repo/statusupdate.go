@@ -3,7 +3,8 @@ package repo
 import (
 	"fmt"
 	"slices"
-	"wabot/internal/database"
+
+	"github.com/ditatompel/wa-status-archiver/internal/database"
 )
 
 type StatusUpdate struct {

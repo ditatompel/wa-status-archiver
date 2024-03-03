@@ -1,8 +1,10 @@
-.PHONY: tailwind copyhtmx build linux64
+.PHONY: tailwind copyhtmx static build linux64
 
 BINARY_NAME = wa-status-archiver
 
-build: copyhtmx tailwind linux64
+build: static linux64
+
+static: tailwind copyhtmx
 
 tailwind:
 	npx tailwindcss -i ./views/css/main.css -o ./views/static/main.css --minify

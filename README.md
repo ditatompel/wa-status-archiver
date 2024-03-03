@@ -16,26 +16,58 @@ Attribution comes first, this project is build on top of these following awesome
 -   [alexedwards/argon2id](https://github.com/alexedwards/argon2id)
 -   [golang.org/x/term](https://pkg.go.dev/golang.org/x/term)
 -   [gosimple/slug](https://github.com/gosimple/slug)
+-   [Flowbite](https://flowbite.com) (Tailwind design components)
 
 And many indirect dependencies can be found in `go.mod`, `go.sum`, `package.json` and `package-lock.json`.
 
-## Development
+## Trying this app
+
+### Requirements (tested on)
+
+-   Node.js >=20.x
+-   Go 1.22.x
+-   PostgreSQL >=15.x
+
+### Prepare the assets
+
+> Only run these steps once.
+
+1. Clone this repository
+2. Copy `.env.example` to `.env` and modify as needed (especially `SECRET_KEY` and **DB** config)
+3. run `npm ci`
+4. run `make static`
+
+### Running the "bot"
+
+1. Run `go run . run`
+2. On initial setup, it will display QR code. Scan it by linking device with your phone.
+
+### Running the web UI
+
+To access Web UI, you need to create an admin account. This can be done by running `go run . admin create` and fill your username and password.
+
+After that, you can run `go run . serve` and access the UI from the browser. (default: http://127.0.0.1:18088)
+
+## Build the binary file
 
 ```shell
-npm install
-make copyhtmx
-npm run dev
-go run . --help
-```
-
-## Build binary file
-
-```shell
-npm ci
 make build
 ```
 
 The binary file will be placed in the `bin` directory.
+
+## Development
+
+If you want to develop or modify UI:
+
+```shell
+npm install
+make static
+npm run dev
+go run . serve
+```
+
+Thanks to [cosmtrek/air](https://github.com/cosmtrek/air), you can run `air serve` to live reload the HTTP server (Do not use `air` when running `run` command).
 
 ## FAQ
 

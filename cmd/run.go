@@ -50,7 +50,7 @@ var wa *waRepo
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run the bot",
-	Long:  `Run the bot by listening to WhatsApp websocket events`,
+	Long:  `Run the bot by listening to WA websocket events`,
 	Run: func(_ *cobra.Command, _ []string) {
 		wLog = waLog.Stdout("Main", LogLevel, true)
 		WaClient := CreateClient()

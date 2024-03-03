@@ -16,7 +16,7 @@ var LogLevel string
 var rootCmd = &cobra.Command{
 	Use:     "wa-status-archiver",
 	Short:   "WA Status Archiver",
-	Long:    `A "bot" that listen to WhatsApp WebSocket and download all videos
+	Long:    `A "bot" that listen to WA WebSocket and download all videos
 and images from your contact status updates.`,
 	Version: AppVer,
 }

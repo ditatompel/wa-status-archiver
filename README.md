@@ -26,7 +26,7 @@ And many indirect dependencies can be found in `go.mod`, `go.sum`, `package.json
 
 ## 2. Trying this app
 
-Screenshot: ![Initial run](./.github/assets/01-initial-run.jpg), ![Device Paired](./.github/assets/02-paired.jpg), ![Login Page](./.github/assets/03-login-page.jpg), ![Contact Page](./.github/assets/04-web-ui-contact-page.jpg), ![Status Page](./.github/assets/05-statuses-page.jpg)
+Screenshot: [Initial run](./.github/assets/01-initial-run.jpg), [Device Paired](./.github/assets/02-paired.jpg), [Login Page](./.github/assets/03-login-page.jpg), [Contact Page](./.github/assets/04-web-ui-contact-page.jpg), [Status Page](./.github/assets/05-statuses-page.jpg)
 
 ### 2.1 Requirements (tested on)
 

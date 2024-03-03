@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "npx tailwindcss -i ./views/css/main.css -o ./public/main.css --watch"
+    "dev": "npx tailwindcss -i ./views/css/main.css -o ./views/static/main.css --watch"
   },
   "devDependencies": {
     "htmx.org": "^1.9.10",

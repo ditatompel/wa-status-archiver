@@ -51,7 +51,8 @@ func serve() {
 	// cookie
 	app.Use(encryptcookie.New(encryptcookie.Config{Key: appCfg.SecretKey}))
 
-	app.Static("/", "./public")
+	app.Use("/static", views.EmbedStatic())
+
 	app.Static("/data/media", "./data/media", fiber.Static{
 		ByteRange: true,
 		Browse:    false,
@@ -79,7 +80,7 @@ func serve() {
 }
 
 func fiberConfig() fiber.Config {
-	template := html.NewFileSystem(views.EmbedHandler(), ".html")
+	template := html.NewFileSystem(views.EmbedTemplates(), ".html")
 	return fiber.Config{
 		Prefork:     config.AppCfg().Prefork,
 		ProxyHeader: config.AppCfg().ProxyHeader,

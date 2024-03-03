@@ -2,5 +2,5 @@
 /bin
 /node_modules
 /tmp
-/public/main.css
-/public/htmx.min.js
+/views/static/main.css
+/views/static/htmx.min.js

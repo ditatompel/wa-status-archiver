@@ -7,7 +7,6 @@ import (
 	"mime"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/ditatompel/wa-status-archiver/internal/botcmd"
@@ -15,7 +14,6 @@ import (
 	"github.com/ditatompel/wa-status-archiver/internal/helpers"
 
 	"github.com/gosimple/slug"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
 	"github.com/spf13/cobra"
 	"go.mau.fi/whatsmeow"
@@ -132,6 +130,7 @@ func ConnectClient(client *whatsmeow.Client) {
 	}
 }
 
+// You can implement any event handler here.
 // see https://github.com/tulir/whatsmeow/blob/main/mdtest/main.go
 func HandleEvent(rawEvt interface{}) {
 	switch evt := rawEvt.(type) {
@@ -177,23 +176,6 @@ func HandleEvent(rawEvt interface{}) {
 		} else {
 			wLog.Infof("%s is now online", evt.From)
 		}
-	// case *events.HistorySync:
-	// 	id := atomic.AddInt32(&historySyncID, 1)
-	// 	fileName := fmt.Sprintf("history-%d-%d.json", startupTime, id)
-	// 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0644)
-	// 	if err != nil {
-	// 		log.Errorf("Failed to open file to write history sync: %v", err)
-	// 		return
-	// 	}
-	// 	enc := json.NewEncoder(file)
-	// 	enc.SetIndent("", "  ")
-	// 	err = enc.Encode(evt.Data)
-	// 	if err != nil {
-	// 		log.Errorf("Failed to write history sync: %v", err)
-	// 		return
-	// 	}
-	// 	log.Infof("Wrote history sync to %s", fileName)
-	// 	_ = file.Close()
 	case *events.AppState:
 		wLog.Debugf("App state event: %+v / %+v", evt.Index, evt.SyncActionValue)
 	case *events.KeepAliveTimeout:
@@ -208,32 +190,11 @@ func HandleEvent(rawEvt interface{}) {
 	}
 }
 
+// this is message handler example
 func HandleMessage(evt *events.Message) {
 	mediaDir := "data/media"
 	isStatusBroadcast := false
 
-	metaParts := []string{fmt.Sprintf("pushname: %s", evt.Info.PushName), fmt.Sprintf("timestamp: %s", evt.Info.Timestamp)}
-	if evt.Info.Type != "" {
-		metaParts = append(metaParts, fmt.Sprintf("type: %s", evt.Info.Type))
-	}
-	if evt.Info.Category != "" {
-		metaParts = append(metaParts, fmt.Sprintf("category: %s", evt.Info.Category))
-	}
-	if evt.IsViewOnce {
-		metaParts = append(metaParts, "view once")
-	}
-	if evt.IsViewOnce {
-		metaParts = append(metaParts, "ephemeral")
-	}
-	if evt.IsViewOnceV2 {
-		metaParts = append(metaParts, "ephemeral (v2)")
-	}
-	if evt.IsDocumentWithCaption {
-		metaParts = append(metaParts, "document with caption")
-	}
-	if evt.IsEdit {
-		metaParts = append(metaParts, "edit")
-	}
 	if evt.Info.Chat.String() == "status@broadcast" {
 		mediaDir = "data/media/_broadcast"
 		isStatusBroadcast = true
@@ -242,6 +203,7 @@ func HandleMessage(evt *events.Message) {
 	if !isStatusBroadcast {
 		wa.storeConversation(evt)
 
+		// this example how the bot response to messages
 		if !evt.Info.IsFromMe {
 			botresp := botcmd.ParseCmd(evt.Message.GetConversation())
 			if botresp != "" {
@@ -250,14 +212,12 @@ func HandleMessage(evt *events.Message) {
 				}
 			}
 		}
+	} else {
+		wLog.Infof("Status broadcast received: %v", evt.Info.Chat)
 	}
 
 	wLog.Infof("Received message %s from %s", evt.Info.ID, evt.Info.SourceString())
-	wLog.Debugf("%s DATA: (%s): %+v", evt.Info.ID, strings.Join(metaParts, ", "), evt.Message)
-
-	if isStatusBroadcast {
-		wLog.Infof("Status broadcast received: %v", evt.Info.Chat)
-	}
+	wLog.Debugf("%s DATA: %+v", evt.Info.ID, evt)
 
 	if evt.Message.GetPollUpdateMessage() != nil {
 		decrypted, err := cli.DecryptPollVote(evt)

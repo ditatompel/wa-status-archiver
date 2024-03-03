@@ -9,7 +9,6 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mdp/qrterminal v1.0.1
 	github.com/spf13/cobra v1.8.0
 	go.mau.fi/whatsmeow v0.0.0-20240223131828-1bdd11e8ee3e

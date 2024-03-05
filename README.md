@@ -92,3 +92,7 @@ Although `whatsmeow` support **SQLite** and **PostgreSQL**, I only create this p
 ### 6.3 Is this project support for multiple WA account?
 
 No, this project only support one account.
+
+### 6.4 Can this app send or response to messages?
+
+Yes, you can search for `ParseCmd` function call in `./cmd/run.go` (commented out) and `botSendMsg()` that use `protobuf` to [reply to specific message](https://github.com/tulir/whatsmeow/issues/88).

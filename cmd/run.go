@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ditatompel/wa-status-archiver/internal/botcmd"
+	// "github.com/ditatompel/wa-status-archiver/internal/botcmd"
 	"github.com/ditatompel/wa-status-archiver/internal/database"
 	"github.com/ditatompel/wa-status-archiver/internal/helpers"
 
@@ -204,14 +204,15 @@ func HandleMessage(evt *events.Message) {
 		wa.storeConversation(evt)
 
 		// this example how the bot response to messages
-		if !evt.Info.IsFromMe {
-			botresp := botcmd.ParseCmd(evt.Message.GetConversation())
-			if botresp != "" {
-				if err := botSendMsg(evt, botresp); err != nil {
-					wLog.Errorf("Failed to send message: %v", err)
-				}
-			}
-		}
+		// this not enabled by default, you can uncomment it and implement your bot logic
+		// if !evt.Info.IsFromMe {
+		// 	botresp := botcmd.ParseCmd(evt.Message.GetConversation())
+		// 	if botresp != "" {
+		// 		if err := botSendMsg(evt, botresp); err != nil {
+		// 			wLog.Errorf("Failed to send message: %v", err)
+		// 		}
+		// 	}
+		// }
 	} else {
 		wLog.Infof("Status broadcast received: %v", evt.Info.Chat)
 	}

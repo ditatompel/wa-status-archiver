@@ -143,7 +143,17 @@ func HandleEvent(rawEvt interface{}) {
 				wLog.Infof("Marked self as available")
 			}
 		}
-	case *events.Connected, *events.PushNameSetting:
+	// case *events.Connected:
+	// 	if len(cli.Store.PushName) == 0 {
+	// 		return
+	// 	}
+	// 	err := cli.SendPresence(types.PresenceAvailable)
+	// 	if err != nil {
+	// 		wLog.Warnf("Failed to send available presence: %v", err)
+	// 	} else {
+	// 		wLog.Infof("Marked self as available")
+	// 	}
+	case *events.PushNameSetting:
 		if len(cli.Store.PushName) == 0 {
 			return
 		}

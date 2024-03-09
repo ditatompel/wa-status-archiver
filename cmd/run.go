@@ -210,7 +210,7 @@ func HandleMessage(evt *events.Message) {
 		isStatusBroadcast = true
 	}
 
-	if !isStatusBroadcast {
+	if !isStatusBroadcast && evt.Message.SenderKeyDistributionMessage == nil {
 		wa.storeConversation(evt)
 
 		// this example how the bot response to messages

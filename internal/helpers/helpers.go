@@ -13,6 +13,7 @@ func PrettyPrint(i interface{}) string {
 	return string(s)
 }
 
+// Copyright (c) 2021 Tulir Asokan
 func ParseJID(arg string) (types.JID, bool) {
 	if arg[0] == '+' {
 		arg = arg[1:]

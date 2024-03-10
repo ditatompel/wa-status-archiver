@@ -18,5 +18,5 @@ linux64:
 clean:
 	go clean
 	rm -rfv ./bin
-	rm ./public/htmx.min.js
-	rm ./public/main.css
+	rm ./views/static/htmx.min.js
+	rm ./views/static/main.css

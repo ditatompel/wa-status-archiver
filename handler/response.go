@@ -50,7 +50,7 @@ func Logout(c *fiber.Ctx) error {
 	return c.Send([]byte("Logged out"))
 }
 
-func ViewLogin(c *fiber.Ctx) error {
+func LoginView(c *fiber.Ctx) error {
 	cookie := c.Cookies("wabot_ui")
 	if cookie != "" {
 		return c.Redirect("/dashboard")
@@ -58,7 +58,7 @@ func ViewLogin(c *fiber.Ctx) error {
 	return c.Render("templates/index", fiber.Map{}, "templates/layouts/main")
 }
 
-func ViewDashboard(c *fiber.Ctx) error {
+func DashboardView(c *fiber.Ctx) error {
 	template := "templates/layouts/app"
 	if hx := c.Get("Hx-Request"); hx == "true" {
 		template = ""
@@ -69,7 +69,7 @@ func ViewDashboard(c *fiber.Ctx) error {
 	}, template)
 }
 
-func ViewContacts(c *fiber.Ctx) error {
+func ContactsView(c *fiber.Ctx) error {
 	co := repo.NewContactRepo(database.GetDB())
 
 	template := "templates/layouts/app"
@@ -96,7 +96,7 @@ func ViewContacts(c *fiber.Ctx) error {
 	}, template)
 }
 
-func ViewContactPartials(c *fiber.Ctx) error {
+func ContactPartials(c *fiber.Ctx) error {
 	co := repo.NewContactRepo(database.GetDB())
 
 	query := repo.ContactQueryParams{
@@ -117,7 +117,7 @@ func ViewContactPartials(c *fiber.Ctx) error {
 	})
 }
 
-func ViewStatusUpdates(c *fiber.Ctx) error {
+func StatusUpdatesView(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
 		JID:         c.Query("jid"),
@@ -146,7 +146,7 @@ func ViewStatusUpdates(c *fiber.Ctx) error {
 	}, template)
 }
 
-func ViewStatusUpdatePartials(c *fiber.Ctx) error {
+func StatusUpdatePartials(c *fiber.Ctx) error {
 	su := repo.NewStatusUpdateRepo(database.GetDB())
 	query := repo.StatusUpdateQueryParams{
 		JID:         c.Query("jid"),

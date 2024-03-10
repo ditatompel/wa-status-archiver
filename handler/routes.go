@@ -5,12 +5,12 @@ import (
 )
 
 func AppRoute(app *fiber.App) {
-	app.Get("/", ViewLogin)
+	app.Get("/", LoginView)
 	app.Post("/", Login)
 	app.Delete("/", Logout)
-	app.Get("/dashboard", CookieProtected, ViewDashboard)
-	app.Get("/contacts", CookieProtected, ViewContacts)
-	app.Get("/contacts/hxp", CookieProtected, ViewContactPartials)
-	app.Get("/status-updates", CookieProtected, ViewStatusUpdates)
-	app.Get("/status-updates/hxp", CookieProtected, ViewStatusUpdatePartials)
+	app.Get("/dashboard", CookieProtected, DashboardView)
+	app.Get("/contacts", CookieProtected, ContactsView)
+	app.Get("/contacts/hxp", CookieProtected, ContactPartials)
+	app.Get("/status-updates", CookieProtected, StatusUpdatesView)
+	app.Get("/status-updates/hxp", CookieProtected, StatusUpdatePartials)
 }

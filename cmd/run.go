@@ -28,8 +28,8 @@ import (
 )
 
 var (
-	cli  *whatsmeow.Client
-	wLog waLog.Logger
+	client *whatsmeow.Client
+	wLog   waLog.Logger
 )
 
 type waRepo struct {
@@ -53,17 +53,17 @@ var runCmd = &cobra.Command{
 	Long:  `Run the bot by listening to WA websocket events`,
 	Run: func(_ *cobra.Command, _ []string) {
 		wLog = waLog.Stdout("Main", LogLevel, true)
-		WaClient := CreateClient()
-		ConnectClient(WaClient)
+		waClient := CreateClient()
+		ConnectClient(waClient)
 
-		WaClient.AddEventHandler(HandleEvent)
+		waClient.AddEventHandler(handleEvent)
 
-		WaClient.Connect()
+		waClient.Connect()
 
 		c := make(chan os.Signal)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 		<-c
-		WaClient.Disconnect()
+		waClient.Disconnect()
 	},
 }
 
@@ -98,9 +98,7 @@ func CreateClient() *whatsmeow.Client {
 	wLog.Infof("Pushname: %s", deviceStore.PushName)
 	wLog.Infof("Platform: %s", deviceStore.Platform)
 
-	cli = whatsmeow.NewClient(deviceStore, wLog)
-
-	return cli
+	return whatsmeow.NewClient(deviceStore, wLog)
 }
 
 func ConnectClient(client *whatsmeow.Client) {
@@ -132,11 +130,11 @@ func ConnectClient(client *whatsmeow.Client) {
 
 // You can implement any event handler here.
 // see https://github.com/tulir/whatsmeow/blob/main/mdtest/main.go
-func HandleEvent(rawEvt interface{}) {
+func handleEvent(rawEvt interface{}) {
 	switch evt := rawEvt.(type) {
 	case *events.AppStateSyncComplete:
-		if len(cli.Store.PushName) > 0 && evt.Name == appstate.WAPatchCriticalBlock {
-			err := cli.SendPresence(types.PresenceAvailable)
+		if len(client.Store.PushName) > 0 && evt.Name == appstate.WAPatchCriticalBlock {
+			err := client.SendPresence(types.PresenceAvailable)
 			if err != nil {
 				wLog.Warnf("Failed to send available presence: %v", err)
 			} else {
@@ -154,12 +152,12 @@ func HandleEvent(rawEvt interface{}) {
 	// 		wLog.Infof("Marked self as available")
 	// 	}
 	case *events.PushNameSetting:
-		if len(cli.Store.PushName) == 0 {
+		if len(client.Store.PushName) == 0 {
 			return
 		}
 		// Send presence available when connecting and when the pushname is changed.
 		// This makes sure that outgoing messages always have the right pushname.
-		err := cli.SendPresence(types.PresenceAvailable)
+		err := client.SendPresence(types.PresenceAvailable)
 		if err != nil {
 			wLog.Warnf("Failed to send available presence: %v", err)
 		} else {
@@ -169,7 +167,7 @@ func HandleEvent(rawEvt interface{}) {
 		os.Exit(0)
 	case *events.Message:
 		wLog.Infof("TYPE MESSAGE:", helpers.PrettyPrint(evt))
-		go HandleMessage(evt)
+		go handleMessage(evt)
 	case *events.Receipt:
 		if evt.Type == types.ReceiptTypeRead || evt.Type == types.ReceiptTypeReadSelf {
 			wLog.Infof("%v was read by %s at %s", evt.MessageIDs, evt.SourceString(), evt.Timestamp)
@@ -201,7 +199,7 @@ func HandleEvent(rawEvt interface{}) {
 }
 
 // this is message handler example
-func HandleMessage(evt *events.Message) {
+func handleMessage(evt *events.Message) {
 	mediaDir := "data/media"
 	isStatusBroadcast := false
 
@@ -231,7 +229,7 @@ func HandleMessage(evt *events.Message) {
 	wLog.Debugf("%s DATA: %+v", evt.Info.ID, evt)
 
 	if evt.Message.GetPollUpdateMessage() != nil {
-		decrypted, err := cli.DecryptPollVote(evt)
+		decrypted, err := client.DecryptPollVote(evt)
 		if err != nil {
 			wLog.Errorf("Failed to decrypt vote: %v", err)
 		} else {
@@ -241,7 +239,7 @@ func HandleMessage(evt *events.Message) {
 			}
 		}
 	} else if evt.Message.GetEncReactionMessage() != nil {
-		decrypted, err := cli.DecryptReaction(evt)
+		decrypted, err := client.DecryptReaction(evt)
 		if err != nil {
 			wLog.Errorf("Failed to decrypt encrypted reaction: %v", err)
 		} else {
@@ -251,7 +249,7 @@ func HandleMessage(evt *events.Message) {
 
 	img := evt.Message.GetImageMessage()
 	if img != nil {
-		data, err := cli.Download(img)
+		data, err := client.Download(img)
 		if err != nil {
 			wLog.Errorf("Failed to download image: %v", err)
 			return
@@ -267,7 +265,7 @@ func HandleMessage(evt *events.Message) {
 
 	vid := evt.Message.GetVideoMessage()
 	if vid != nil {
-		data, err := cli.Download(vid)
+		data, err := client.Download(vid)
 		if err != nil {
 			wLog.Errorf("Failed to download video: %v", err)
 			return
@@ -414,9 +412,9 @@ func botSendMsg(evt *events.Message, message string) error {
 		},
 	}
 
-	messageId := cli.GenerateMessageID()
-	// resp, err := cli.SendMessage(context.Background(), recipient.ToNonAD(), msg)
-	resp, err := cli.SendMessage(
+	messageId := client.GenerateMessageID()
+	// resp, err := client.SendMessage(context.Background(), recipient.ToNonAD(), msg)
+	resp, err := client.SendMessage(
 		context.Background(),
 		roomId,
 		msg,
